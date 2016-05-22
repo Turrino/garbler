@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ecb0aa45-49f7-44be-8f03-4b8235ed4f0f" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/files/breadcrumbs" afterPath="$PROJECT_DIR$/files/breadcrumbs" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/wrgrbrler.py" afterPath="$PROJECT_DIR$/wrgrbrler.py" />
     </list>
     <ignored path="wrgrbrler.iws" />
@@ -32,8 +30,8 @@
       <file leaf-file-name="wrgrbrler.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/wrgrbrler.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="478">
-              <caret line="43" column="17" selection-start-line="43" selection-start-column="17" selection-end-line="43" selection-end-column="17" />
+            <state relative-caret-position="512">
+              <caret line="57" column="12" selection-start-line="57" selection-start-column="12" selection-end-line="57" selection-end-column="12" />
               <folding>
                 <element signature="e#0#15#0" expanded="true" />
               </folding>
@@ -439,8 +437,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/wrgrbrler.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="478">
-          <caret line="43" column="17" selection-start-line="43" selection-start-column="17" selection-end-line="43" selection-end-column="17" />
+        <state relative-caret-position="512">
+          <caret line="57" column="12" selection-start-line="57" selection-start-column="12" selection-end-line="57" selection-end-column="12" />
           <folding>
             <element signature="e#0#15#0" expanded="true" />
           </folding>
