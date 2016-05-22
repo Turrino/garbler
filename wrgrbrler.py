@@ -3,8 +3,12 @@ import random
 import json
 from PIL import Image, ImageFilter
 
-def any_of_many(crumb_list):
-    return crumb_list[random.randrange(0, len(crumb_list))]
+def any_of_many(crumb_list, discard_item = True):
+    randomness = random.randrange(0, len(crumb_list))
+    item = crumb_list[randomness]
+    if discard_item:
+        crumb_list.remove(item)
+    return item
 
 def drawerer():
     combined = Image.new('RGBA', (100, 300), color=50)
@@ -23,11 +27,12 @@ def writerer(crumbs):
 
     characterInfo = crumbs['charatest']
 
-    wroted = '{0} {1} {2}'.format(any_of_many(characterInfo['part1']),
-                                  any_of_many(characterInfo['part2']),
-                                  any_of_many(characterInfo['part3']))
+    wroted = ""
 
-    return wroted
+    for key in sorted(characterInfo):
+        wroted = "{0} {1}".format(wroted, any_of_many(characterInfo[key]))
+
+    return wroted[1:]
 
 
 def main(main_args, crumbs):
