@@ -1,8 +1,14 @@
 {
-  "charatest":
+  "characters":
   {
-    "part1": ["Ex-boyfriend", "Vegan", "Smelly", "Selfie-Addict", "Feral"],
-    "part2": ["Shoe-maker", "Segway", "Solicitor", "Ballerina", "Ghost"],
-    "part3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
+    "1": ["Ex-boyfriend", "Vegan", "Smelly", "Selfie-Addict", "Feral"],
+    "2": ["Shoe-maker", "Segway", "Solicitor", "Ballerina", "Ghost"],
+    "3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
+  },
+  "locations":
+  {
+    "1": ["Underground", "Imaginary", "Retro", "Post-Apocalyptic", "Smelly"],
+    "2": ["Water Cooler", "Kinder-Garden", "Chippy", "Tea Rooms", "Laundry"],
+    "3": ["of Dooom", "in Asbestos coating", "with bad music", "with buffet", "filled with lava", "owned by lizard-men"]
   }
 }

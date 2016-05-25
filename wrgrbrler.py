@@ -23,9 +23,9 @@ def drawerer():
 
     return combined
 
-def writerer(crumbs):
+def writerer(crumbs, set):
 
-    characterInfo = crumbs['charatest']
+    characterInfo = crumbs[set]
 
     wroted = ""
 
@@ -39,10 +39,13 @@ def main(main_args, crumbs):
 
     drawed = drawerer()
 
-    wroted = writerer(crumbs)
+    character = writerer(crumbs, 'characters')
+    place1 = writerer(crumbs, 'locations')
+    place2 = writerer(crumbs, 'locations')
+    place3 = writerer(crumbs, 'locations')
 
-    drawed.show()
-    print(wroted)
+    # drawed.show()
+    print('{0} went to a {1}, had lunch at a {2}, ended up in a {3}'.format(character, place1, place2, place3))
 
 
 
