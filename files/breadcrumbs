@@ -1,14 +1,33 @@
 {
   "characters":
   {
-    "1": ["Ex-boyfriend", "Vegan", "Smelly", "Selfie-Addict", "Feral"],
-    "2": ["Shoe-maker", "Segway", "Solicitor", "Ballerina", "Ghost"],
-    "3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
+    "f": {
+      "1": ["Ex-girlfriend", "Vegan", "Smelly", "Selfie-Addict", "Feral"],
+      "2": ["Shoe-maker", "Segway-Creaturess", "Solicitor", "Ballerina", "Ghost"],
+      "3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
+    },
+    "m": {
+      "1": ["Ex-boyfriend", "Vegan", "Smelly", "Selfie-Addict", "Feral"],
+      "2": ["Shoe-maker", "Segway-Creature", "Solicitor", "Ballerino", "Ghost"],
+      "3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
+    }
   },
   "locations":
   {
     "1": ["Underground", "Imaginary", "Retro", "Post-Apocalyptic", "Smelly"],
     "2": ["Water Cooler", "Kinder-Garden", "Chippy", "Tea Rooms", "Laundry"],
     "3": ["of Dooom", "in Asbestos coating", "with bad music", "with buffet", "filled with lava", "owned by lizard-men"]
+  },
+  "event_types": ["intro", "basic", "outro"],
+  "templates": {
+    "simple" : {
+      "events" : {
+        "intro" : {},
+        "basic" : {},
+        "basic" : {},
+        "basic" : {},
+        "outro" : {}
+      }
+    }
   }
 }
