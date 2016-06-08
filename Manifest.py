@@ -1,7 +1,7 @@
 class Manifest:
     def __init__(self):
-        self.peeps = None
-        self.places = None
+        self.peeps = []
+        self.places = []
 
 
 class Peep:

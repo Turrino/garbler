@@ -1,16 +1,9 @@
 {
   "characters":
   {
-    "f": {
-      "1": ["Ex-girlfriend", "Vegan", "Smelly", "Selfie-Addict", "Feral"],
-      "2": ["Shoe-maker", "Segway-Creaturess", "Solicitor", "Ballerina", "Ghost"],
-      "3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
-    },
-    "m": {
-      "1": ["Ex-boyfriend", "Vegan", "Smelly", "Selfie-Addict", "Feral"],
-      "2": ["Shoe-maker", "Segway-Creature", "Solicitor", "Ballerino", "Ghost"],
-      "3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
-    }
+    "1": [["Ex-girlfriend", "Ex-boyfriend"], "Vegan", "Smelly", "Selfie-Addict", "Feral"],
+    "2": ["Shoe-maker", ["Segway-Creaturess", "Segway-Creature"], "Solicitor", ["Ballerina", "Ballerino"], "Ghost"],
+    "3": ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
   },
   "locations":
   {

@@ -25,19 +25,24 @@ def drawerer():
     return combined
 
 
-def writerer(crumbs, set, subset=None):
+def writerer(crumbset, subset=None):
+
+    get = any_of_many
+
+    def fetch_subset(words):
+        pick = any_of_many(words)
+        return pick[subset] if type(pick) is list else pick
 
     if subset is not None:
-        words = crumbs[set][subset]
-    else:
-        words = crumbs[set]
+        get = fetch_subset
 
     wroted = ""
 
-    for key in sorted(words):
-        wroted = "{0} {1}".format(wroted, any_of_many(words[key]))
+    for key in sorted(crumbset):
+        wroted = "{0} {1}".format(wroted, get(crumbset[key]))
 
     return wroted[1:]
+
 
 def main(main_args, crumbs):
 
@@ -52,19 +57,19 @@ def main(main_args, crumbs):
 
     peeps = manifest.peeps
     places = manifest.places
-    peeps = []
-    places = []
 
     for x in range(0, int(main_args.peep_count)):
-        gender = 'm' if random.randrange(0, 2) else 'f'
-        peeps.append(Peep(writerer(crumbs, 'characters', gender), gender))
+        #gender = 'm' if random.randrange(0, 2) else 'f'
+        gender = random.randrange(0, 2)
+        peeps.append(Peep(writerer(crumbs['characters'], gender), gender))
 
     for x in range(0, places_count):
-        places.append(Place(writerer(crumbs, 'locations')))
+        places.append(Place(writerer(crumbs['locations'])))
 
     # drawed.show()
     print('{0} went to a {1}, had lunch at a {2}, ended up in a {3}'
           .format(peeps[0].name, places[0].name, places[1].name, places[2].name))
+    print('{0} gender is {1}'.format(peeps[0].name, peeps[0].gender, places[1].name, places[2].name))
 
 
 if __name__ == '__main__':
@@ -73,8 +78,8 @@ if __name__ == '__main__':
     argument_parser.add_argument('--template')
 
     with open('breadcrumbs') as crumbs_file:
-        crumbs = json.load(crumbs_file)
+        parsed_crumbs = json.load(crumbs_file)
 
-    main(argument_parser.parse_args(), crumbs)
+    main(argument_parser.parse_args(), parsed_crumbs)
 
 
