@@ -1,0 +1,3 @@
+[setup]
+template = simple
+peep_count = 3

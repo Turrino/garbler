@@ -3,7 +3,6 @@ class Manifest:
         self.peeps = []
         self.places = []
 
-
 class Peep:
     def __init__(self, name, gender):
         self.name = name
