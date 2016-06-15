@@ -1,3 +1,5 @@
 [setup]
 template = simple
-peep_count = 3
+peep_count = 2
+#comma separated, no spaces unless the name includes one
+peep_names = yalla,walla

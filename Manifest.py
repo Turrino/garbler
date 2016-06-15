@@ -2,10 +2,12 @@ class Manifest:
     def __init__(self):
         self.peeps = []
         self.places = []
+        self.events = []
 
 class Peep:
-    def __init__(self, name, gender):
+    def __init__(self, name, desc, gender):
         self.name = name
+        self.desc = desc
         self.gender = gender
         #to do: attributes
 
@@ -17,8 +19,9 @@ class Place:
 class Event:
     def __init__(self, event_args):
         self.type = event_args["type"]
-        self.place = event_args["place"]
-        #to do: self.place = event_args["mood"]
-        self.friends = event_args["friends"]
-        self.foes = event_args["foes"]
-        self.items = event_args["items"]
+        # to do:
+        #self.place = event_args["place"]
+        #self.place = event_args["mood"]
+        #self.friends = event_args["friends"]
+        #self.foes = event_args["foes"]
+        #self.items = event_args["items"]

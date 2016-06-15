@@ -18,31 +18,36 @@ class Wrgrbrler:
 
     def writerer(self, crumbset_key, subset=None):
 
-        get = self.any_of_many
+        fetch_crumb = self.any_of_many
 
         def fetch_subset(words):
             pick = self.any_of_many(words)
             return pick[subset] if type(pick) is list else pick
 
         if subset is not None:
-            get = fetch_subset
+            fetch_crumb = fetch_subset
 
         wroted = ""
 
         crumbset = self.crumbs[crumbset_key]
 
-        for key in sorted(crumbset):
-            wroted = "{0} {1}".format(wroted, get(crumbset[key]))
+        for list in crumbset:
+            wroted = "{0} {1}".format(wroted, fetch_crumb(list))
 
         return wroted[1:]
 
-    def get_peep(self, gender = None):
+    def get_peep(self, name, gender = None):
         if gender is None:
             gender = random.randrange(0, 2)
-        return Peep(self.writerer('characters', gender), gender)
+        return Peep(name, self.writerer('characters', gender), gender)
 
     def get_place(self, gender=None):
         return Place(self.writerer('locations'))
+
+    def get_event(self, type):
+        #to do
+        return None
+
 
 def drawerer():
     combined = Image.new('RGBA', (100, 300), color=50)
@@ -69,8 +74,13 @@ def main():
     template_name = parser.get('setup', 'template')
     template = crumbs['templates'][template_name]
     # Assuming one event needs only place only - can change later
-    places_count = len(template['events'])
+    events_count = len(template['events'])
     peep_count = int(parser.get('setup', 'peep_count'))
+    peep_names = str.split(parser.get('setup', 'peep_names'), ',')
+
+    if peep_count != len(peep_names):
+        raise ValueError('Number of peeps ({0}) and number of peep names ({1}) provided does not match, fix the config.'
+              .format(peep_count, len(peep_names)))
 
     garbler = Wrgrbrler(crumbs)
 
@@ -80,17 +90,23 @@ def main():
 
     peeps = manifest.peeps
     places = manifest.places
+    events = manifest.events
 
     for x in range(0, peep_count):
-        peeps.append(garbler.get_peep())
+        peeps.append(garbler.get_peep(peep_names[x]))
 
-    for x in range(0, places_count):
+    for x in range(0, events_count):
         places.append(garbler.get_place())
+        # get event of the type needed at this index by the template
+        events.append(garbler.get_event(template['events'][x]['type']))
+
+
+
 
     # drawed.show()
-    print('{0} went to a {1}, had lunch at a {2}, ended up in a {3}'
-          .format(peeps[0].name, places[0].name, places[1].name, places[2].name))
-    print('{0} gender is {1}'.format(peeps[0].name, peeps[0].gender, places[1].name, places[2].name))
+    print('{0}, the {1}, went to a {2}, had lunch at a {3}, ended up in a {4}'
+          .format(peeps[0].name, peeps[0].desc, places[0].name, places[1].name, places[2].name))
+    print('{0} gender is {1}'.format(peeps[0].desc, peeps[0].gender, places[1].name, places[2].name))
 
 
 if __name__ == '__main__':

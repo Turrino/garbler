@@ -14,8 +14,8 @@ class Wrgrbrler_tests(unittest.TestCase):
         self.crumbs = None
         self.garbler = None
 
-    def testGetPeep(self):
-        test_peep = self.garbler.get_peep().name
+    def testGetPeepDesc(self):
+        test_peep = self.garbler.get_peep("test_name").desc
         self.assertTrue(type(test_peep) is str)
         self.assertTrue(len(test_peep) > 10)
         self.assertTrue(len(test_peep) < 100)
