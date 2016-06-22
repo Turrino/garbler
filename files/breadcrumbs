@@ -5,6 +5,18 @@
     ["Shoe-maker", ["Segway-Creaturess", "Segway-Creature"], "Solicitor", ["Ballerina", "Ballerino"], "Ghost"],
     ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
   ],
+  "creatures":
+  [
+    [["Ex-girlfriend", "Ex-boyfriend"], "Vegan", "Smelly", "Selfie-Addict", "Feral"],
+    ["Shoe-maker", ["Segway-Creaturess", "Segway-Creature"], "Solicitor", ["Ballerina", "Ballerino"], "Ghost"],
+    ["of the Bearded Armpit", "of the Shining Eyebrow", "of the Cheeky Cheese", "Master of unemployment", "of Aggravated Pasta-Stealing", "with Splendid Neck-Gills"]
+  ],
+  "items":
+  [
+    ["illustrious", "boring", "legendary", "fetid", "craft"],
+    ["talisman", "saber-tooth", "cookie-dough", "halberd", "cup-holder", "asbestos stove"],
+    ["of dust-sweeping", "of doom", "of flames", "limited edition", "holster", "toy", "in the shape of a rabbit"]
+  ],
   "locations":
   [
     ["Underground", "Imaginary", "Retro", "Post-Apocalyptic", "Smelly"],
@@ -12,13 +24,24 @@
     ["of Dooom", "in Asbestos coating", "with bad music", "with buffet", "filled with lava", "owned by lizard-men"]
   ],
   "event_types": ["intro", "basic", "outro"],
+  "event_patterns":
+    [
+        [
+           ["in the woods you come across a @creatures@", "you fall into a bottomless pit, inhabited by @creatures@"],
+           [["bad luck: the thing thinks you're here to steal his precious @items@.", "it finds your presence boring and ignores you.", "it's your lucky day: the creature thinks you're a @creatures@."]],
+           [["you hit the poor thing on the head and manage to barely get away", "you have tea together and discuss the advantages of having a @items@", "as a token of appreciation, he hands his @items@ over to you."]]
+        ]
+    ],
   "templates": {
     "simple" : {
       "events" : [
-        {"type": "basic"},
-        {"type": "basic"},
-        {"type": "basic"}
+        {"type": "intro", "mood": 1},
+        {"type": "basic", "mood": 0},
+        {"type": "basic", "mood": 2},
+        {"type": "basic", "mood": 0},
+        {"type": "outro", "mood": 2}
       ]
     }
-  }
+  },
+  "replacements": ["creatures", "items"]
 }

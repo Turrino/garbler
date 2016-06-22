@@ -1,0 +1,24 @@
+WRGRBRLER
+
+Breadcrumbs
+	Main level >
+		Crumbsets: templates, characters, locations, etc >
+			Crumblists: a list of positional elements >
+				Positional Element: a word or sentence to be used as building block. e.g. 1/2/3rd component of a name or sentence.
+				Subset: expands a single positional element into a list of positional elements that can be used for contextual reasons (e.g. male/female).
+				Can be any lenght.
+			
+		
+
+
+Peeps	
+	Properties
+		Gender: 0 for female, 1 for male
+		
+Location
+	Properties
+	
+Event
+	Properties
+		Mood: determines the direction this event will take. 0: downward, 1: neutral, 2: upward
+		

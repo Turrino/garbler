@@ -18,7 +18,9 @@ class Place:
 
 class Event:
     def __init__(self, event_args):
-        self.type = event_args["type"]
+        self.type = event_args['type']
+        self.mood = event_args['mood']
+        self.text = ""
         # to do:
         #self.place = event_args["place"]
         #self.place = event_args["mood"]

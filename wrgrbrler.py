@@ -8,6 +8,8 @@ from PIL import Image, ImageFilter
 class Wrgrbrler:
     def __init__(self, parsed_crumbs):
         self.crumbs = parsed_crumbs
+        #how many event-level patterns can we choose from
+        self.event_pattern_range = len(self.crumbs["event_patterns"])
 
     def any_of_many(self, crumblist, discard_item = True):
         randomness = random.randrange(0, len(crumblist))
@@ -16,10 +18,17 @@ class Wrgrbrler:
             crumblist.remove(item)
         return item
 
-    def writerer(self, crumbset_key, subset=None):
+    def stuff_the_blanks(self, parameters_text):
+        while parameters_text.find('@') > 0:
+            for replacement in self.crumbs["replacements"]:
+                parameters_text = parameters_text.replace("@{0}@".format(replacement), self.get_element(replacement))
+        return parameters_text
 
+    def writerer(self, crumbset, subset=None):
         fetch_crumb = self.any_of_many
 
+        #We use this only if a subset parameter (mood, gender...) is passed in, in order to access
+        #Then check if the selected element is a list - some elements are universal and do not have a subset
         def fetch_subset(words):
             pick = self.any_of_many(words)
             return pick[subset] if type(pick) is list else pick
@@ -29,24 +38,28 @@ class Wrgrbrler:
 
         wroted = ""
 
-        crumbset = self.crumbs[crumbset_key]
-
-        for list in crumbset:
-            wroted = "{0} {1}".format(wroted, fetch_crumb(list))
+        for wordlist in crumbset:
+            wroted = "{0} {1}".format(wroted, fetch_crumb(wordlist))
 
         return wroted[1:]
 
-    def get_peep(self, name, gender = None):
+    def get_peep(self, name, gender=None):
         if gender is None:
             gender = random.randrange(0, 2)
-        return Peep(name, self.writerer('characters', gender), gender)
+        return Peep(name, self.writerer(self.crumbs['characters'], gender), gender)
 
     def get_place(self, gender=None):
-        return Place(self.writerer('locations'))
+        return Place(self.writerer(self.crumbs['locations']))
 
-    def get_event(self, type):
-        #to do
-        return None
+    def get_element(self, category):
+        return self.writerer(self.crumbs[category], -1)
+
+    def get_event(self, event_attributes):
+        event = Event(event_attributes)
+        pattern = self.crumbs["event_patterns"][(random.randrange(0,self.event_pattern_range))]
+        #generate text with @string parameters (see crumbs), then fill those in with more generated stuff.
+        event.text = self.stuff_the_blanks(self.writerer(pattern, event.mood))
+        return event
 
 
 def drawerer():
@@ -97,16 +110,20 @@ def main():
 
     for x in range(0, events_count):
         places.append(garbler.get_place())
+        # put back once we have enough crumbs not to crash
         # get event of the type needed at this index by the template
-        events.append(garbler.get_event(template['events'][x]['type']))
+        #events.append(garbler.get_event(template['events'][x]))
 
-
+    ##remove later
+    events.append(garbler.get_event(template['events'][1]))
 
 
     # drawed.show()
     print('{0}, the {1}, went to a {2}, had lunch at a {3}, ended up in a {4}'
           .format(peeps[0].name, peeps[0].desc, places[0].name, places[1].name, places[2].name))
     print('{0} gender is {1}'.format(peeps[0].desc, peeps[0].gender, places[1].name, places[2].name))
+    for event in events:
+        print('event: {0} {1}: {2}'.format(event.type, event.mood, event.text))
 
 
 if __name__ == '__main__':
