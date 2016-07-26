@@ -7,8 +7,10 @@ Breadcrumbs
 				Positional Element: a word or sentence to be used as building block. e.g. 1/2/3rd component of a name or sentence.
 				Subset: expands a single positional element into a list of positional elements that can be used for contextual reasons (e.g. male/female).
 				Can be any lenght.
-			
 		
+	Specific Crumbsets > 
+		event_patterns: a set of joined crumblists that determines the flair of an event, e.g. a sudden apparition, stopping at a place, etc.
+			It does not determine the outcome or the mood of the event, it is only needed to restrict the amount of building blocks to a coherent set.		
 
 
 Peeps	
@@ -20,5 +22,10 @@ Location
 	
 Event
 	Properties
-		Mood: determines the direction this event will take. 0: downward, 1: neutral, 2: upward
+		Mood: determines the direction this event will take. 0: downward, 1: neutral, 2: upward			
 		
+		
+To do's:
+- Schema check on the breadcrums, e.g.: a single item in a crumlist in an event crumbset can be a single item (1 item = universal mood, gets picked regardless),
+	or a list. If it is a list, it must have 3 items (mood subsets).
+	Otherwise the garbler might crash at runtime if it tries to fetch a mood that does not exist.

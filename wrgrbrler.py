@@ -21,7 +21,9 @@ class Wrgrbrler:
     def stuff_the_blanks(self, parameters_text):
         while parameters_text.find('@') > 0:
             for replacement in self.crumbs["replacements"]:
-                parameters_text = parameters_text.replace("@{0}@".format(replacement), self.get_element(replacement))
+                #the last parameter limits replacements to 1 so that if the text has two items in the same category
+                #we don't end up with duplicates. if an item is speshul and needs to be repeated, then make a diff method
+                parameters_text = parameters_text.replace("@{0}@".format(replacement), self.get_element(replacement), 1)
         return parameters_text
 
     def writerer(self, crumbset, subset=None):
@@ -56,9 +58,11 @@ class Wrgrbrler:
 
     def get_event(self, event_attributes):
         event = Event(event_attributes)
+        #see event_patterns desc in docs
         pattern = self.crumbs["event_patterns"][(random.randrange(0,self.event_pattern_range))]
         #generate text with @string parameters (see crumbs), then fill those in with more generated stuff.
         event.text = self.stuff_the_blanks(self.writerer(pattern, event.mood))
+        # random subset would be : [....] self.writerer(pattern, random.randrange(0, 3))
         return event
 
 
