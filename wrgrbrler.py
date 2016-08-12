@@ -1,7 +1,7 @@
 from configparser import ConfigParser
 import random
 import json
-from Manifest import Manifest, Peep, Place, Event
+from Manifest import *
 from PIL import Image, ImageFilter
 
 
@@ -9,7 +9,7 @@ class Wrgrbrler:
     def __init__(self, parsed_crumbs):
         self.crumbs = parsed_crumbs
         #how many event-level patterns can we choose from
-        self.event_pattern_range = len(self.crumbs["event_patterns"])
+        self.event_pattern_range = len(self.crumbs['event_patterns'])
 
     def any_of_many(self, crumblist, discard_item = True):
         randomness = random.randrange(0, len(crumblist))
@@ -20,7 +20,7 @@ class Wrgrbrler:
 
     def stuff_the_blanks(self, parameters_text):
         while parameters_text.find('@') > 0:
-            for replacement in self.crumbs["replacements"]:
+            for replacement in self.crumbs['replacements']:
                 #the last parameter limits replacements to 1 so that if the text has two items in the same category
                 #we don't end up with duplicates. if an item is speshul and needs to be repeated, then make a diff method
                 parameters_text = parameters_text.replace("@{0}@".format(replacement), self.get_element(replacement), 1)
@@ -57,11 +57,15 @@ class Wrgrbrler:
         return self.writerer(self.crumbs[category], -1)
 
     def get_event(self, event_attributes):
-        event = Event(event_attributes)
-        #see event_patterns desc in docs
-        pattern = self.crumbs["event_patterns"][(random.randrange(0,self.event_pattern_range))]
+        # see event_patterns desc in docs
+        blocks = self.crumbs["event_patterns"][(random.randrange(0,self.event_pattern_range))]
+
+        event = Event(event_attributes, blocks)
+
+        <<<>>>>># pass the right stuff to writerer, not blocks
+
         #generate text with @string parameters (see crumbs), then fill those in with more generated stuff.
-        event.text = self.stuff_the_blanks(self.writerer(pattern, event.mood))
+        event.text = self.stuff_the_blanks(self.writerer())
         # random subset would be : [....] self.writerer(pattern, random.randrange(0, 3))
         return event
 
@@ -78,6 +82,44 @@ def drawerer():
     combined.paste(part3, (0, 200))
 
     return combined
+
+def build_event_patterns(crumbs):
+    events_patterns = []
+    for raw_event in crumbs['event_patterns']:
+        segment_blocks = []
+        for block in raw_event["blocks"]:
+            #for is a dictionary with key on the block outcome (+,-,=)
+            #and value on the block that needs to follow up + any extra text (optional)
+            fork = {}
+            for key_pointer in block["fork"]:
+                pv = key_pointer["pointer"]
+                fork[key_pointer["key"]] = Pointer(pv["to_id"], pv["text"])
+
+            #each segment has a series of possible outcomes
+            segments = []
+            for segment in block["segments"]:
+                # this is where the actual text options are (1 for each outcome)
+                outcomes = []
+                for outcome in segment["outcomes"]:
+                    outcomes.append(Outcome(outcome["text"], outcome["connotation"]))
+
+                # filters are used to influence which outcome is picked out of the segment
+                # based on characteristics, items, conditions, etc.
+                filter_data = segment["filter"]
+                ch_mods = []
+                for mod in filter_data["char_mod"]:
+                    ch_mods.append(Modifier(mod["id"], mod["mods"]))
+
+                    ### TO DO: implement item and lucky (and any other needed) mods.
+                    ###  right now we don't even parse them because cba
+                filter = Filter(ch_mods, [], [])
+                segments.append(Segment(outcomes, filter))
+
+            segment_blocks.append(SegmentBlock(block["id"], segments, fork))
+        # one list of segment blocks can be used by one event
+        events_patterns.append(segment_blocks)
+
+    return events_patterns
 
 def main():
 
@@ -98,6 +140,8 @@ def main():
     if peep_count != len(peep_names):
         raise ValueError('Number of peeps ({0}) and number of peep names ({1}) provided does not match, fix the config.'
               .format(peep_count, len(peep_names)))
+
+    crumbs.events_patterns = build_event_patterns(crumbs)
 
     garbler = Wrgrbrler(crumbs)
 

@@ -24,12 +24,77 @@
     ["of Dooom", "in Asbestos coating", "with bad music", "with buffet", "filled with lava", "owned by lizard-men"]
   ],
   "event_types": ["intro", "basic", "outro"],
+  "connotations": ["+", "=", "-"],
   "event_patterns":
     [
         [
-           ["in the woods you come across a @creatures@", "you fall into a bottomless pit, inhabited by @creatures@"],
-           [["bad luck: the thing thinks you're here to steal his precious @items@.", "it finds your presence boring and ignores you.", "it's your lucky day: the creature thinks you're a @creatures@."]],
-           [["you hit the poor thing on the head and manage to barely get away", "you have tea together and discuss the advantages of having a @items@", "as a token of appreciation, he hands his @items@ over to you."]]
+            "blocks" :
+             [
+                {
+                 "id": 1,
+                 "segments":
+                  [
+                    {
+                        "outcomes":
+                         [
+                            { "text": "outcome 1"
+                            "connotation": "+"},
+                            { "text": "outcome 2"
+                            "connotation": "-"},
+                            { "text": "outcome 3"
+                            "connotation": "="},
+                         ]
+                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
+                    },
+                    {
+                        "outcomes":
+                         [
+                            { "text": "outcome 4"
+                            "connotation": "+"},
+                            { "text": "outcome 5"
+                            "connotation": "-"},
+                            { "text": "outcome 6"
+                            "connotation": "="},
+                         ]
+                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
+                    },
+
+                 ],
+                 "fork": [ { "key" : "+", "pointer": { "to_id": "sampleblock2", "text": " after this, go to sampleblock2 " }}, { "key" : "-", "pointer": { "to_id": "sampleblock3", "text": " after this, go to sampleblock3 " }}]
+                },
+                {
+                 "id": 1,
+                 "segments":
+                  [
+                    {
+                        "outcomes":
+                         [
+                            { "text": "outcome 7"
+                            "connotation": "+"},
+                            { "text": "outcome 8"
+                            "connotation": "-"},
+                            { "text": "outcome 9"
+                            "connotation": "="},
+                         ]
+                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
+                    },
+                    {
+                        "outcomes":
+                         [
+                            { "text": "outcome 10"
+                            "connotation": "+"},
+                            { "text": "outcome 11"
+                            "connotation": "-"},
+                            { "text": "outcome 12"
+                            "connotation": "="},
+                         ]
+                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
+                    },
+
+                 ],
+                 "fork": []
+                }
+            ]
         ]
     ],
   "templates": {
