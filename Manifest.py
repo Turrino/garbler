@@ -1,14 +1,15 @@
 class Manifest:
-    def __init__(self):
-        self.peeps = []
-        self.places = []
-        self.events = []
+    def __init__(self, peep, places, events):
+        self.peep = peep
+        self.places = places
+        self.events = events
 
 class Peep:
-    def __init__(self, name, desc, gender):
+    def __init__(self, name, attributes, gender):
         self.name = name
-        self.desc = desc
+        self.desc = ""
         self.gender = gender
+        self.attributes = attributes
         #to do: attributes
 
 class Place:
@@ -22,10 +23,10 @@ class Outcome:
         self.connotation = connotation
 
 class Modifier():
-    def __init__(self, id, mods):
+    def __init__(self, id, multipliers):
         self.id = id
-        #mods is a list of integers
-        self.mods = mods
+        #this is a list of integers lists (each inner list being a list of two)
+        self.multipliers = multipliers
 
 class Filter:
     def __init__(self, character_modifiers, item_modifiers, luck_modifier):
@@ -53,7 +54,7 @@ class Event:
     def __init__(self, event_args, blocks):
         self.type = event_args['type']
         self.mood = event_args['mood']
-        self.blocks = event_args['blocks']
+        self.blocks = blocks
         self.text = ""
 
         # to do:

@@ -27,75 +27,103 @@
   "connotations": ["+", "=", "-"],
   "event_patterns":
     [
-        [
+        {
             "blocks" :
              [
                 {
                  "id": 1,
-                 "segments":
-                  [
-                    {
-                        "outcomes":
-                         [
-                            { "text": "outcome 1"
-                            "connotation": "+"},
-                            { "text": "outcome 2"
-                            "connotation": "-"},
-                            { "text": "outcome 3"
-                            "connotation": "="},
-                         ]
-                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
-                    },
-                    {
-                        "outcomes":
-                         [
-                            { "text": "outcome 4"
-                            "connotation": "+"},
-                            { "text": "outcome 5"
-                            "connotation": "-"},
-                            { "text": "outcome 6"
-                            "connotation": "="},
-                         ]
-                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
-                    },
-
+                 "variants":
+                 [
+                    [
+                        {
+                            "outcomes":
+                             [
+                                { "text": "outcome 1",
+                                "connotation": "+"},
+                                { "text": "outcome 2",
+                                "connotation": "-"},
+                                { "text": "outcome 3",
+                                "connotation": "="}
+                             ],
+                            "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "item_mod": [], "lucky_mod": []}
+                        },
+                        {
+                            "outcomes":
+                             [
+                                { "text": "outcome 4",
+                                "connotation": "+"},
+                                { "text": "outcome 5",
+                                "connotation": "-"},
+                                { "text": "outcome 6",
+                                "connotation": "="}
+                             ],
+                            "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "item_mod": [], "lucky_mod": []}
+                        }
+                    ],
+                    [
+                        {
+                            "outcomes":
+                             [
+                                { "text": "outcome 1a",
+                                "connotation": "+"},
+                                { "text": "outcome 2a",
+                                "connotation": "-"},
+                                { "text": "outcome 3a",
+                                "connotation": "="}
+                             ],
+                            "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[2,1]] }, { "id":"testvalue2", "multi": [[3,1]] }, { "id":"testvalue3", "multi": [[1,1]] }], "item_mod": [], "lucky_mod": []}
+                        },
+                        {
+                            "outcomes":
+                             [
+                                { "text": "outcome 4a",
+                                "connotation": "+"},
+                                { "text": "outcome 5a",
+                                "connotation": "-"},
+                                { "text": "outcome 6a",
+                                "connotation": "="}
+                             ],
+                            "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[2,1]] }, { "id":"testvalue2", "multi": [[3,1]] }, { "id":"testvalue3", "multi": [[1,1]] }], "item_mod": [], "lucky_mod": []}
+                        }
+                    ]
                  ],
                  "fork": [ { "key" : "+", "pointer": { "to_id": "sampleblock2", "text": " after this, go to sampleblock2 " }}, { "key" : "-", "pointer": { "to_id": "sampleblock3", "text": " after this, go to sampleblock3 " }}]
                 },
                 {
-                 "id": 1,
-                 "segments":
-                  [
-                    {
-                        "outcomes":
-                         [
-                            { "text": "outcome 7"
-                            "connotation": "+"},
-                            { "text": "outcome 8"
-                            "connotation": "-"},
-                            { "text": "outcome 9"
-                            "connotation": "="},
-                         ]
-                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
-                    },
-                    {
-                        "outcomes":
-                         [
-                            { "text": "outcome 10"
-                            "connotation": "+"},
-                            { "text": "outcome 11"
-                            "connotation": "-"},
-                            { "text": "outcome 12"
-                            "connotation": "="},
-                         ]
-                        "filtr" : { "char_mod": [{ "id":"testvalue1", "mods": [1,0,0] }, { "id":"testvalue2", "mods": [0,1,0] }, { "id":"testvalue3", "mods": [0,0,1] }], "item_mod": [], "lucky_mod": []}
-                    },
-
+                 "id": 2,
+                 "variants":
+                 [
+                     [
+                        {
+                            "outcomes":
+                             [
+                                { "text": "outcome 7",
+                                "connotation": "+"},
+                                { "text": "outcome 8",
+                                "connotation": "-"},
+                                { "text": "outcome 9",
+                                "connotation": "="}
+                             ],
+                            "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "item_mod": [], "lucky_mod": []}
+                        },
+                        {
+                            "outcomes":
+                             [
+                                { "text": "outcome 10",
+                                "connotation": "+"},
+                                { "text": "outcome 11",
+                                "connotation": "-"},
+                                { "text": "outcome 12",
+                                "connotation": "="}
+                             ],
+                            "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "item_mod": [], "lucky_mod": []}
+                        }
+                     ]
                  ],
                  "fork": []
                 }
             ]
-        ]
+        }
     ],
   "templates": {
     "simple" : {

@@ -1,5 +1,9 @@
 [setup]
 template = simple
-peep_count = 2
+#multiplier, 1 = has no effected, >1 increases randomness, <1 makes other modifiers more relevant
+random_mod = 0.8
 #comma separated, no spaces unless the name includes one
-peep_names = yalla,walla
+peep_name = yalla
+# temp stuff here. attributes will then be passed on based on the actual character
+peep_attrib = testvalue1,1;testvalue2,0;testvalue3,0
+peep_gender = 0
