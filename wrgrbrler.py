@@ -1,5 +1,7 @@
 from configparser import ConfigParser
+from collections import Counter
 import random
+import itertools
 import json
 from Manifest import *
 from PIL import Image, ImageFilter
@@ -11,10 +13,10 @@ class Wrgrbrler:
         self.peep = peep
         peep.desc = self.writerer(self.crumbs['characters'], peep.gender)
         self.random_mod = random_mod
-        #how many event-level patterns can we choose from
+        # how many event-level patterns can we choose from
         self.event_pattern_range = len(self.crumbs['event_patterns'])
 
-    def any_of_many(self, crumblist, discard_item = True):
+    def any_of_many(self, crumblist, discard_item=True):
         randomness = random.randrange(0, len(crumblist))
         item = crumblist[randomness]
         if discard_item:
@@ -24,16 +26,16 @@ class Wrgrbrler:
     def stuff_the_blanks(self, parameters_text):
         while parameters_text.find('@') > 0:
             for replacement in self.crumbs['replacements']:
-                #the last parameter limits replacements to 1 so that if the text has two items in the same category
-                #we don't end up with duplicates. if an item is speshul and needs to be repeated, then make a diff method
+                # the last parameter limits replacements to 1 so that if the text has two items in the same category
+                # we don't end up with duplicates. if an item is speshul and needs to be repeated, then make a diff method
                 parameters_text = parameters_text.replace("@{0}@".format(replacement), self.get_element(replacement), 1)
         return parameters_text
 
     def writerer(self, crumbset, subset=None):
         fetch_crumb = self.any_of_many
 
-        #We use this only if a subset parameter (mood, gender...) is passed in, in order to access
-        #Then check if the selected element is a list - some elements are universal and do not have a subset
+        # We use this only if a subset parameter (mood, gender...) is passed in, in order to access
+        # Then check if the selected element is a list - some elements are universal and do not have a subset
         def fetch_subset(words):
             pick = self.any_of_many(words)
             return pick[subset] if type(pick) is list else pick
@@ -73,16 +75,15 @@ class Wrgrbrler:
 
         for mod in segment.filtr.char_mod:
             if mod.id in self.peep.attributes:
-                #each multiplier is a list of two integers, the first represents the outcome we want to affect
-                #and the second is the actual likelyhood multiplier value (which can be more or less than 1)
+                # each multiplier is a list of two integers, the first represents the outcome we want to affect
+                # and the second is the actual likelyhood multiplier value (which can be more or less than 1)
                 for multiplier in mod.multipliers:
-                    outcome_tally[multiplier[0]-1] = outcome_tally[multiplier[0]-1]*multiplier[1]
+                    outcome_tally[multiplier[0] - 1] = outcome_tally[multiplier[0] - 1] * multiplier[1]
 
         top_tally = max(outcome_tally)
 
-
         random_modifier = top_tally * self.random_mod
-        outcome_tally = list(map(lambda o: (o - (random.randrange(0, random_modifier*100))/100), outcome_tally))
+        outcome_tally = list(map(lambda o: (o - (random.randrange(0, random_modifier * 100)) / 100), outcome_tally))
         top_tally = max(outcome_tally)
 
         selected_outcome = [i for i, j in enumerate(outcome_tally) if j == top_tally]
@@ -94,6 +95,46 @@ class Wrgrbrler:
 
         return segment.outcomes[int(selected_outcome[index])]
 
+    # The overall connotation from the calculated outcomes (outcome_calculator) of one block
+    # is fed into the fork which points to the block we should use next.
+    def generate_outcome_list(self, block_list):
+
+        def calculate_fork_outcomes(blocks_outcome):
+            connotation = Counter(list(o.connotation for o in blocks_outcome)).most_common(3)
+            connotation_index = 0
+
+            # random tiebreaker - maybe use lucky dust here
+            if len(connotation) > 1 and connotation[0][0] == connotation[1][0]:
+                # check if 3rd place is tied as well
+                if len(connotation) > 2 and connotation[1][0] == connotation[2][0]:
+                    connotation_index = random.randrange(0, 3)
+                else:
+                    connotation_index = random.randrange(0, 2)
+
+            connotation = connotation[connotation_index][0]
+            return connotation
+
+        results = []
+
+        def process_forks(block):
+            current_block_outcomes = list(map(lambda s: (self.outcome_calculator(s)), block.segments))
+            results.append(current_block_outcomes)
+
+            # empty fork means this is the end
+            if len(block.fork) == 0:
+                return
+            else:
+                fork_value = block.fork[calculate_fork_outcomes(current_block_outcomes)]
+                next_block = next((b for b in block_list if b.id == fork_value.to_id), None)
+                if next_block is None:
+                    raise ReferenceError("No block found (id: {0}). Crumbs probably at fault.".format(fork_value.to_id))
+                process_forks(next_block)
+
+        # start from the first block in the array (might need something here if starting block has to be random)
+        process_forks(block_list[0])
+
+        return list(itertools.chain(*results))
+
     def get_event(self, event_attributes):
         # see event_patterns desc in docs
         event_data = self.any_of_many(self.crumbs["event_patterns"])
@@ -102,10 +143,9 @@ class Wrgrbrler:
 
         event_text = ""
 
-        for block in event.blocks:
-            for segment in block.segments:
-                #to do: make use of the outcome connotation, not just the text (implement forks)
-                event_text = "{0} {1}".format(event_text, self.outcome_calculator(segment).text)
+        outcome_list = self.generate_outcome_list(event.blocks)
+        for outcome in outcome_list:
+            event_text = "{0} {1}".format(event_text, outcome.text)
 
         # generate text with @string parameters(crumbs), then fill those in with more generated stuff.
         event.text = self.stuff_the_blanks(event_text[1:])
@@ -126,20 +166,21 @@ def drawerer():
 
     return combined
 
+
 def build_event_pattern(blocklist):
     parsed_blocks = []
     for block in blocklist:
-        #for is a dictionary with key on the block outcome (+,-,=)
-        #and value on the block that needs to follow up + any extra text (optional)
+        # a fork is a dictionary with key on the block outcome (+,-,=)
+        # and value on the block that needs to follow up + any extra text (optional)
         fork = {}
         for key_pointer in block["fork"]:
             pv = key_pointer["pointer"]
             fork[key_pointer["key"]] = Pointer(pv["to_id"], pv["text"])
 
-        #we need to select one variant out of all the possible ones; variants are not affected by event filters,
-        #and unused variants are simply discarded. variants will have different modifier weights
-        #(e.g. some variants might be more suitable for certain characters), so that the outcome is never guaranteed
-        #and we do not bind the event down to a single set of modifiers.
+        # we need to select one variant out of all the possible ones; variants are not affected by event filters,
+        # and unused variants are simply discarded. variants will have different modifier weights
+        # (e.g. some variants might be more suitable for certain characters), so that the outcome is never guaranteed
+        # and we do not bind the event down to a single set of modifiers.
         variant = block["variants"][random.randrange(0, len(block["variants"]))]
         # each segment has a series of possible outcomes
         segments = []
@@ -166,8 +207,8 @@ def build_event_pattern(blocklist):
 
     return parsed_blocks
 
-def main():
 
+def main():
     parser = ConfigParser()
     parser.read('../config')
 
@@ -180,11 +221,11 @@ def main():
     # Assuming one event needs only place only - can change later
     events_count = len(template['events'])
 
-    #this is a multiplier, the higher the value = more random events, less influence by modifiers
+    # this is a multiplier, the higher the value = more random events, less influence by modifiers
     rm = float(parser.get('setup', 'random_mod'))
 
-    #to do - remove this later, input will come from actual character(s)
-    #also for now we don't need multiple, stick to one
+    # to do - remove this later, input will come from actual character(s)
+    # also for now we don't need multiple, stick to one
     peep_name = parser.get('setup', 'peep_name')
     peep_gender = int(parser.get('setup', 'peep_gender'))
     peep_attrib = {}
@@ -204,7 +245,7 @@ def main():
         places.append(garbler.get_place())
         # put back once we have enough crumbs not to crash
         # get event of the type needed at this index by the template
-        #events.append(garbler.get_event(template['events'][x]))
+        # events.append(garbler.get_event(template['events'][x]))
 
     ##remove later
     events.append(garbler.get_event(template['events'][1]))
@@ -221,5 +262,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

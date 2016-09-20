@@ -31,7 +31,7 @@
             "blocks" :
              [
                 {
-                 "id": 1,
+                 "id": "1",
                  "variants":
                  [
                     [
@@ -87,21 +87,21 @@
                         }
                     ]
                  ],
-                 "fork": [ { "key" : "+", "pointer": { "to_id": "sampleblock2", "text": " after this, go to sampleblock2 " }}, { "key" : "-", "pointer": { "to_id": "sampleblock3", "text": " after this, go to sampleblock3 " }}]
+                 "fork": [ { "key" : "+", "pointer": { "to_id": "2", "text": " after this(+), go to sample block 2 " }}, { "key" : "-", "pointer": { "to_id": "3", "text": " after this(-), go to sample block 3 " }}, { "key" : "=", "pointer": { "to_id": "2", "text": " after this(=), go to sample block 2 " }}]
                 },
                 {
-                 "id": 2,
+                 "id": "2",
                  "variants":
                  [
                      [
                         {
                             "outcomes":
                              [
-                                { "text": "outcome 7",
+                                { "text": "outcome 7 (fork2)",
                                 "connotation": "+"},
-                                { "text": "outcome 8",
+                                { "text": "outcome 8 (fork2)",
                                 "connotation": "-"},
-                                { "text": "outcome 9",
+                                { "text": "outcome 9 (fork2)",
                                 "connotation": "="}
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "item_mod": [], "lucky_mod": []}
@@ -109,11 +109,32 @@
                         {
                             "outcomes":
                              [
-                                { "text": "outcome 10",
+                                { "text": "outcome 10 (fork2)",
                                 "connotation": "+"},
-                                { "text": "outcome 11",
+                                { "text": "outcome 11 (fork2)",
                                 "connotation": "-"},
-                                { "text": "outcome 12",
+                                { "text": "outcome 12 (fork2)",
+                                "connotation": "="}
+                             ],
+                            "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "item_mod": [], "lucky_mod": []}
+                        }
+                     ]
+                 ],
+                 "fork": []
+                },
+                {
+                 "id": "3",
+                 "variants":
+                 [
+                     [
+                        {
+                            "outcomes":
+                             [
+                                { "text": "outcome 7 (fork3)",
+                                "connotation": "+"},
+                                { "text": "outcome 8 (fork3)",
+                                "connotation": "-"},
+                                { "text": "outcome 9 (fork3)",
                                 "connotation": "="}
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "item_mod": [], "lucky_mod": []}
