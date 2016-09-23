@@ -10,6 +10,7 @@ class Peep:
         self.desc = ""
         self.gender = gender
         self.attributes = attributes
+        self.ld = 0
         #to do: attributes
 
 class Place:
@@ -21,6 +22,7 @@ class Outcome:
     def __init__(self, text, connotation):
         self.text = text
         self.connotation = connotation
+        self.drops = []
 
 class Modifier():
     def __init__(self, id, multipliers):
@@ -55,6 +57,14 @@ class Event:
         self.type = event_args['type']
         self.mood = event_args['mood']
         self.blocks = blocks
+        self.text = ""
+
+class Item:
+    def __init__(self, type, id, durability):
+        self.type = type
+        self.id = id
+        self.durability = durability
+        self.name = name
         self.text = ""
 
         # to do:

@@ -64,6 +64,11 @@ class Wrgrbrler:
     def get_element(self, category):
         return self.writerer(self.crumbs[category], -1)
 
+    def process_drops(self, drops):
+        if "ld" in drops and drops["ld"] != 0:
+            self.peep.ld *= drops["ld"]
+        # to do: process items too !
+
     def outcome_calculator(self, segment):
         outcome_tally = []
 
@@ -78,12 +83,12 @@ class Wrgrbrler:
                 # each multiplier is a list of two integers, the first represents the outcome we want to affect
                 # and the second is the actual likelyhood multiplier value (which can be more or less than 1)
                 for multiplier in mod.multipliers:
-                    outcome_tally[multiplier[0] - 1] = outcome_tally[multiplier[0] - 1] * multiplier[1]
+                    outcome_tally[multiplier[0] - 1] *= multiplier[1]
 
         top_tally = max(outcome_tally)
 
         random_modifier = top_tally * self.random_mod
-        outcome_tally = list(map(lambda o: (o - (random.randrange(0, random_modifier * 100)) / 100), outcome_tally))
+        outcome_tally = list(map(lambda o: (o - (random.randrange(0, int(random_modifier * 100))) / 100), outcome_tally))
         top_tally = max(outcome_tally)
 
         selected_outcome = [i for i, j in enumerate(outcome_tally) if j == top_tally]
@@ -93,27 +98,31 @@ class Wrgrbrler:
         if len(selected_outcome) != 1:
             index = random.randrange(0, len(selected_outcome))
 
-        return segment.outcomes[int(selected_outcome[index])]
+        finalised = segment.outcomes[int(selected_outcome[index])]
+
+        if len(finalised.drops) > 0:
+            self.process_drops(finalised.drops)
+
+        return finalised
+
+    def calculate_fork_outcomes(self, blocks_outcome):
+        connotation = Counter(list(o.connotation for o in blocks_outcome)).most_common(3)
+        connotation_index = 0
+
+        # random tiebreaker - maybe use lucky dust here
+        if len(connotation) > 1 and connotation[0][0] == connotation[1][0]:
+            # check if 3rd place is tied as well
+            if len(connotation) > 2 and connotation[1][0] == connotation[2][0]:
+                connotation_index = random.randrange(0, 3)
+            else:
+                connotation_index = random.randrange(0, 2)
+
+        connotation = connotation[connotation_index][0]
+        return connotation
 
     # The overall connotation from the calculated outcomes (outcome_calculator) of one block
     # is fed into the fork which points to the block we should use next.
     def generate_outcome_list(self, block_list):
-
-        def calculate_fork_outcomes(blocks_outcome):
-            connotation = Counter(list(o.connotation for o in blocks_outcome)).most_common(3)
-            connotation_index = 0
-
-            # random tiebreaker - maybe use lucky dust here
-            if len(connotation) > 1 and connotation[0][0] == connotation[1][0]:
-                # check if 3rd place is tied as well
-                if len(connotation) > 2 and connotation[1][0] == connotation[2][0]:
-                    connotation_index = random.randrange(0, 3)
-                else:
-                    connotation_index = random.randrange(0, 2)
-
-            connotation = connotation[connotation_index][0]
-            return connotation
-
         results = []
 
         def process_forks(block):
@@ -124,7 +133,7 @@ class Wrgrbrler:
             if len(block.fork) == 0:
                 return
             else:
-                fork_value = block.fork[calculate_fork_outcomes(current_block_outcomes)]
+                fork_value = block.fork[self.calculate_fork_outcomes(current_block_outcomes)]
                 next_block = next((b for b in block_list if b.id == fork_value.to_id), None)
                 if next_block is None:
                     raise ReferenceError("No block found (id: {0}). Crumbs probably at fault.".format(fork_value.to_id))
@@ -189,7 +198,10 @@ def build_event_pattern(blocklist):
             # this is where the actual text options are (1 for each outcome)
             outcomes = []
             for outcome in segment["outcomes"]:
-                outcomes.append(Outcome(outcome["text"], outcome["connotation"]))
+                out = Outcome(outcome["text"], outcome["connotation"])
+                if "drops" in outcome:
+                    out.drops = outcome["drops"]
+                outcomes.append(out)
 
             # filters are used to influence which outcome is picked out of the segment
             # based on characteristics, items, conditions, etc.
@@ -228,12 +240,14 @@ def main():
     # also for now we don't need multiple, stick to one
     peep_name = parser.get('setup', 'peep_name')
     peep_gender = int(parser.get('setup', 'peep_gender'))
+    peep_ld = int(parser.get('setup', 'peep_ld'))
     peep_attrib = {}
     for kvp in str.split(parser.get('setup', 'peep_attrib'), ';'):
         split_kvp = str.split(kvp, ',')
         peep_attrib[split_kvp[0]] = split_kvp[1]
 
     peep = Peep(peep_name, peep_attrib, peep_gender)
+    peep.ld = peep_ld
     places = []
     events = []
 
@@ -255,7 +269,8 @@ def main():
     # drawed.show()
     print('{0}, the {1}, went to a {2}, had lunch at a {3}, ended up in a {4}'
           .format(peep.name, peep.desc, places[0].name, places[1].name, places[2].name))
-    print('{0} gender is {1}'.format(peep.desc, peep.gender, places[1].name, places[2].name))
+    print('{0} gender is {1}. lucky dust: {2}'
+          .format(peep.desc, peep.gender, peep.ld))
     for event in events:
         print('event: {0} {1}: {2}'.format(event.type, event.mood, event.text))
 

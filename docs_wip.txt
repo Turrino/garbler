@@ -12,6 +12,17 @@ Breadcrumbs
 		event_patterns: a set of joined crumblists that determines the flair of an event, e.g. a sudden apparition, stopping at a place, etc.
 			It does not determine the outcome or the mood of the event, it is only needed to restrict the amount of building blocks to a coherent set.		
 
+    Events in crumnbs:
+        Events are structured as Blocks>Variants>Segments>Outcomes
+            Block: list of variants and a fork pointing to other blocks
+            Variants: lists of segments; one set of segments is randomly chosen (e.g. no multipliers or lucky dust)
+            Segment: each segment has multiple possible outcomes, only one is chosen (using multipliers)
+            Outcomes: has a text skeleton that goes to compose the overall event; also defines if there are drops or not
+                Drops: defines if an outcome drops lucky dust or not, and any item drops (as well as any other special drop)
+
+
+Lucky Dust (LD)
+    Can be carried, not an item. Affects events. The amount carried is defined at the start of the events.
 
 Peeps	
 	Properties
