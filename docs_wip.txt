@@ -20,6 +20,12 @@ Breadcrumbs
             Outcomes: has a text skeleton that goes to compose the overall event; also defines if there are drops or not
                 Drops: defines if an outcome drops lucky dust or not, and any item drops (as well as any other special drop)
 
+Items drops:
+    In crumbs: "items" example: [["type_a",2,50],["type_b",1,100]]
+     items is a list of possible drops, each element of the list containing:
+     - Item type
+     - Item maximum tier (upper limit for the random range)
+     - Rate of drop (percentage points)
 
 Lucky Dust (LD)
     Can be carried, not an item. Affects events. The amount carried is defined at the start of the events.

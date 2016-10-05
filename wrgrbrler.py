@@ -34,7 +34,7 @@ class Wrgrbrler:
     def writerer(self, crumbset, subset=None):
         fetch_crumb = self.any_of_many
 
-        # We use this only if a subset parameter (mood, gender...) is passed in, in order to access
+        # We use this only if a subset parameter (mood, gender...) is passed in, in order to access the sub-features
         # Then check if the selected element is a list - some elements are universal and do not have a subset
         def fetch_subset(words):
             pick = self.any_of_many(words)
@@ -64,10 +64,25 @@ class Wrgrbrler:
     def get_element(self, category):
         return self.writerer(self.crumbs[category], -1)
 
+    def create_item(self, item_drop):
+        name = self.writerer(self.crumbs["items"][item_drop[0]])
+        tier = random.randrange(1, item_drop[1]+1)
+        # pick modifiers that are consistent with that item type
+        attributes_list = self.crumbs["item_modifiers_matrix"][item_drop[0]]
+        durability = random.randrange(1, tier+1)
+        # to do: randomise modifiers and mod level based on tier and luck
+        chosen_attributes = [Modifier(attributes_list[random.randrange(0, len(attributes_list))], 1)]
+
+        return Item(item_drop[0], chosen_attributes, durability, name)
+
     def process_drops(self, drops):
         if "ld" in drops and drops["ld"] != 0:
             self.peep.ld *= drops["ld"]
-        # to do: process items too !
+        if "items" in drops and drops["items"] != 0:
+            # each element contains: 0 = item type, 1 = tier upper limit, 2 = drop chance %
+            for item_drop in drops["items"]:
+                if random.randrange(0, 100) < item_drop[2]:
+                    self.peep.items.append(self.create_item(item_drop))
 
     def outcome_calculator(self, segment):
         outcome_tally = []
@@ -274,6 +289,10 @@ def main():
     for event in events:
         print('event: {0} {1}: {2}'.format(event.type, event.mood, event.text))
 
+    print('Loot: ')
+    for item in peep.items:
+        print(' - {0}; type: {1}; durability: {2}; attribute: {3}'
+              .format(item.name, item.type, item.durability, item.print_attributes()))
 
 if __name__ == '__main__':
     main()

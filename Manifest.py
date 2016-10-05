@@ -11,6 +11,7 @@ class Peep:
         self.gender = gender
         self.attributes = attributes
         self.ld = 0
+        self.items = []
         #to do: attributes
 
 class Place:
@@ -24,6 +25,8 @@ class Outcome:
         self.connotation = connotation
         self.drops = []
 
+#Modifiers stem from characters, items and possibly other things too. Some mods are unique to each category,
+#while some are common and may stack (e.g. an item increasing a mod that a character already has).
 class Modifier():
     def __init__(self, id, multipliers):
         self.id = id
@@ -60,12 +63,17 @@ class Event:
         self.text = ""
 
 class Item:
-    def __init__(self, type, id, durability):
+    def __init__(self, type, attributes, durability, name):
         self.type = type
-        self.id = id
+        self.attributes = attributes
         self.durability = durability
         self.name = name
-        self.text = ""
+
+    def print_attributes(self):
+        description = ""
+        for attr in self.attributes:
+            description += " {0}".format(attr.id)
+        return description
 
         # to do:
         #self.place = event_args["place"]
