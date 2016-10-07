@@ -3,6 +3,7 @@ from collections import Counter
 import random
 import itertools
 import json
+import math
 from Manifest import *
 from PIL import Image, ImageFilter
 
@@ -67,13 +68,37 @@ class Wrgrbrler:
     def create_item(self, item_drop):
         name = self.writerer(self.crumbs["items"][item_drop[0]])
         tier = random.randrange(1, item_drop[1]+1)
+
+        points = tier*2
+        minimum_allocation = math.floor(points/10) if points/10>1 else 1
+        durability = random.randrange(1, minimum_allocation+1)
+        modpoints = points - durability
         # pick modifiers that are consistent with that item type
-        attributes_list = self.crumbs["item_modifiers_matrix"][item_drop[0]]
-        durability = random.randrange(1, tier+1)
-        # to do: randomise modifiers and mod level based on tier and luck
-        chosen_attributes = [Modifier(attributes_list[random.randrange(0, len(attributes_list))], 1)]
+        attributes_list = self.crumbs["item_attributes_matrix"][item_drop[0]]
+        chosen_attributes = []
+
+        while modpoints > 0:
+            if modpoints == 1:
+                chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1.1))
+                modpoints -= 1
+            else:
+                if (len(attributes_list) > 1):
+                    allocation = math.floor(modpoints/2)
+                else:
+                    allocation = modpoints
+
+                modpoints -= allocation
+                #50% chance, half the points go into one mod, 50% chance they go into two mods
+                multiple_allocation = random.randrange(0,2)
+                if multiple_allocation and len(attributes_list) > 2:
+                    chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1+allocation/20))
+                    chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1+allocation/20))
+                else:
+                    chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1 + allocation/10))
 
         return Item(item_drop[0], chosen_attributes, durability, name)
+
+
 
     def process_drops(self, drops):
         if "ld" in drops and drops["ld"] != 0:
@@ -140,24 +165,28 @@ class Wrgrbrler:
     def generate_outcome_list(self, block_list):
         results = []
 
-        def process_forks(block):
-            current_block_outcomes = list(map(lambda s: (self.outcome_calculator(s)), block.segments))
-            results.append(current_block_outcomes)
+        end_of_blocks = False
+        current_block = block_list[0]
+
+        # start from the first block (might need something here if starting block has to be random)
+        while not end_of_blocks:
+            current_block_outcomes = list(map(lambda s: (self.outcome_calculator(s)), current_block.segments))
+            for outcome in current_block_outcomes:
+                results.append(outcome)
 
             # empty fork means this is the end
-            if len(block.fork) == 0:
-                return
+            if len(current_block.fork) == 0:
+                end_of_blocks = True
             else:
-                fork_value = block.fork[self.calculate_fork_outcomes(current_block_outcomes)]
+                fork_value = current_block.fork[self.calculate_fork_outcomes(current_block_outcomes)]
                 next_block = next((b for b in block_list if b.id == fork_value.to_id), None)
                 if next_block is None:
                     raise ReferenceError("No block found (id: {0}). Crumbs probably at fault.".format(fork_value.to_id))
-                process_forks(next_block)
+                current_block = next_block
 
-        # start from the first block in the array (might need something here if starting block has to be random)
-        process_forks(block_list[0])
+        return results
 
-        return list(itertools.chain(*results))
+
 
     def get_event(self, event_attributes):
         # see event_patterns desc in docs
@@ -256,10 +285,10 @@ def main():
     peep_name = parser.get('setup', 'peep_name')
     peep_gender = int(parser.get('setup', 'peep_gender'))
     peep_ld = int(parser.get('setup', 'peep_ld'))
-    peep_attrib = {}
+    peep_attrib = []
     for kvp in str.split(parser.get('setup', 'peep_attrib'), ';'):
         split_kvp = str.split(kvp, ',')
-        peep_attrib[split_kvp[0]] = split_kvp[1]
+        peep_attrib.append(Attribute(split_kvp[0], int(split_kvp[1])))
 
     peep = Peep(peep_name, peep_attrib, peep_gender)
     peep.ld = peep_ld

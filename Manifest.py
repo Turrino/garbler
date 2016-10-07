@@ -29,9 +29,15 @@ class Outcome:
 #while some are common and may stack (e.g. an item increasing a mod that a character already has).
 class Modifier():
     def __init__(self, id, multipliers):
-        self.id = id
-        #this is a list of integers lists (each inner list being a list of two)
+        self.id = id #this matches the id of an attribute
+        #  this is a list of integers lists (each inner list being a list of two;
+        #  the event to be influenced, and the strength of the effect
         self.multipliers = multipliers
+
+class Attribute():
+    def __init__(self, id, level):
+        self.id = id
+        self.level = level
 
 class Filter:
     def __init__(self, character_modifiers, item_modifiers, luck_modifier):
@@ -72,7 +78,7 @@ class Item:
     def print_attributes(self):
         description = ""
         for attr in self.attributes:
-            description += " {0}".format(attr.id)
+            description += " {0} attr: {1}".format(attr.id, attr.level)
         return description
 
         # to do:
