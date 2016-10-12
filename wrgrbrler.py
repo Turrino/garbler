@@ -9,9 +9,10 @@ from PIL import Image, ImageFilter
 
 
 class Wrgrbrler:
-    def __init__(self, parsed_crumbs, peep, random_mod):
+    def __init__(self, parsed_crumbs, peep, ld_spend, random_mod):
         self.crumbs = parsed_crumbs
         self.peep = peep
+        self.ld_spend = ld_spend
         peep.desc = self.writerer(self.crumbs['characters'], peep.gender)
         self.random_mod = random_mod
         # how many event-level patterns can we choose from
@@ -71,7 +72,7 @@ class Wrgrbrler:
 
         points = tier*2
         minimum_allocation = math.floor(points/10) if points/10>1 else 1
-        durability = random.randrange(1, minimum_allocation+1)
+        durability = random.randrange(minimum_allocation, points-minimum_allocation+1)
         modpoints = points - durability
         # pick modifiers that are consistent with that item type
         attributes_list = self.crumbs["item_attributes_matrix"][item_drop[0]]
@@ -102,7 +103,10 @@ class Wrgrbrler:
 
     def process_drops(self, drops):
         if "ld" in drops and drops["ld"] != 0:
-            self.peep.ld *= drops["ld"]
+            if (drops["ld"] < 0):
+                self.peep.ld -= random.randrange(0, -drops["ld"])
+            else:
+                self.peep.ld += random.randrange(0, drops["ld"])
         if "items" in drops and drops["items"] != 0:
             # each element contains: 0 = item type, 1 = tier upper limit, 2 = drop chance %
             for item_drop in drops["items"]:
@@ -110,13 +114,10 @@ class Wrgrbrler:
                     self.peep.items.append(self.create_item(item_drop))
 
     def outcome_calculator(self, segment):
-        outcome_tally = []
-
         # 1 is the basic value for an outcome to happen
-        # the higher, the more likelyhood of it being picked
+        # the higher, the more likely it will be picked
         # can go below 1 but not below 0
-        for outcome in segment.outcomes:
-            outcome_tally.append(1)
+        outcome_tally = [1] * len(segment.outcomes)
 
         for mod in segment.filtr.char_mod:
             if mod.id in self.peep.attributes:
@@ -222,6 +223,13 @@ def drawerer():
 
 def build_event_pattern(blocklist):
     parsed_blocks = []
+
+    random_ints = random.sample(range(1, 10), len(blocklist))
+    rnd_sum = sum(random_ints)
+    ld_distro = []
+    for int in random_ints:
+        ld_distro.append(int/rnd_sum*len(blocklist))
+
     for block in blocklist:
         # a fork is a dictionary with key on the block outcome (+,-,=)
         # and value on the block that needs to follow up + any extra text (optional)
@@ -253,7 +261,6 @@ def build_event_pattern(blocklist):
             ch_mods = []
             for mod in filter_data["char_mod"]:
                 ch_mods.append(Modifier(mod["id"], mod["multi"]))
-
                 ### TO DO: implement item and lucky (and any other needed) mods.
                 ###  right now we don't even parse them because cba
             filter = Filter(ch_mods, [], [])
@@ -285,17 +292,18 @@ def main():
     peep_name = parser.get('setup', 'peep_name')
     peep_gender = int(parser.get('setup', 'peep_gender'))
     peep_ld = int(parser.get('setup', 'peep_ld'))
+    ld_spend = int(parser.get('setup', 'ld_spend'))
     peep_attrib = []
     for kvp in str.split(parser.get('setup', 'peep_attrib'), ';'):
         split_kvp = str.split(kvp, ',')
         peep_attrib.append(Attribute(split_kvp[0], int(split_kvp[1])))
 
     peep = Peep(peep_name, peep_attrib, peep_gender)
-    peep.ld = peep_ld
+    peep.ld = peep_ld - ld_spend
     places = []
     events = []
 
-    garbler = Wrgrbrler(crumbs, peep, rm)
+    garbler = Wrgrbrler(crumbs, peep, ld_spend, rm)
 
     drawed = drawerer()
 

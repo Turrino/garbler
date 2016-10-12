@@ -26,6 +26,9 @@ Items drops:
      - Item type
      - Item maximum tier (upper limit for the random range)
      - Rate of drop (percentage points)
+     When generating an item: for each tier, the generator will have an amount of points (fixed at 2, could be configurable)
+      that will be randomly allocated in sections, either mods or durability.
+       Each section will have at least 1pt / 10% of the points, whichever is smaller
 
 Lucky Dust (LD)
     Can be carried, not an item. Affects events. The amount carried is defined at the start of the events.
