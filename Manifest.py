@@ -81,6 +81,12 @@ class Item:
             description += " {0} attr: {1}".format(attr.id, attr.level)
         return description
 
+class Config:
+    def __init__(self, starting_ld, ld_spend, ld_variance):
+        self.starting_ld = starting_ld
+        self.ld_spend = ld_spend
+        self.ld_variance = ld_variance
+
         # to do:
         #self.place = event_args["place"]
         #self.place = event_args["mood"]

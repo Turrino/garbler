@@ -9,3 +9,4 @@ peep_attrib = testvalue1,0;testvalue2,0;testvalue3,2
 peep_gender = 0
 peep_ld = 50
 ld_spend = 40
+ld_variance = 0.75
