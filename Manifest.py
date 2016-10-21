@@ -82,10 +82,11 @@ class Item:
         return description
 
 class Config:
-    def __init__(self, starting_ld, ld_spend, ld_variance):
+    def __init__(self, starting_ld, ld_spend, ld_variance, ld_activator):
         self.starting_ld = starting_ld
         self.ld_spend = ld_spend
         self.ld_variance = ld_variance
+        self.ld_activator = ld_activator
 
         # to do:
         #self.place = event_args["place"]

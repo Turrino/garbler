@@ -2,6 +2,8 @@ from configparser import ConfigParser
 from collections import Counter
 import random
 import json
+import os
+import yaml
 import math
 from Manifest import *
 from PIL import Image, ImageFilter
@@ -13,6 +15,7 @@ class Wrgrbrler:
         self.peep = peep
         self.config = config
         self.ld_spend = config.ld_spend
+        self.ld_activation = config.starting_ld*config.ld_activator
         peep.desc = self.writerer(self.crumbs['characters'], peep.gender)
         self.random_mod = random_mod
         # how many event-level patterns can we choose from
@@ -113,7 +116,7 @@ class Wrgrbrler:
                 if random.randrange(0, 100) < item_drop[2]:
                     self.peep.items.append(self.create_item(item_drop))
 
-    def outcome_calculator(self, segment, ld_allocation):
+    def outcome_calculator(self, segment, ld_active):
         # 1 is the basic value for an outcome to happen
         # the higher, the more likely it will be picked
         # can go below 1 but not below 0
@@ -141,10 +144,21 @@ class Wrgrbrler:
 
         finalised = segment.outcomes[int(selected_outcome[index])]
 
+        if finalised.connotation in ['-', '='] and ld_active and self.try_with_some_lucky_dust():
+            print("sparkly sparkle")
+            for otc in segment.outcomes:
+                if otc.connotation == '+':
+                    finalised = otc
+                    break
+
         if len(finalised.drops) > 0:
             self.process_drops(finalised.drops)
 
         return finalised
+
+    def try_with_some_lucky_dust(self):
+        return random.randrange(0,2)
+
 
     def calculate_fork_outcomes(self, blocks_outcome):
         connotation = Counter(list(o.connotation for o in blocks_outcome)).most_common(3)
@@ -195,30 +209,28 @@ class Wrgrbrler:
 
         end_of_blocks = False
         current_block = block_list[0]
+        depth = self.calculate_deepest_branch_from(current_block, block_list)
 
         # start from the first block (might need something here if starting block has to be random)
         while not end_of_blocks:
-            depth = self.calculate_deepest_branch_from(current_block, block_list)
-
-            if depth == 1:
-                segment_allotted_ld = random.randrange(math.floor(self.ld_spend/2), self.ld_spend)
-            else:
-                # divide the remaining ld by the number of maximum blocks that are still to come
-                segment_allotted_ld = self.ld_spend/depth
-                # and alter that amount up to + or - the configured variance (%)
-                ld_variation = random.randrange(0, math.floor(segment_allotted_ld*self.config.ld_variance))
-                ld_variation = -ld_variation if random.randrange(0, 2) else ld_variation
-                segment_allotted_ld += ld_variation
+            # divide the remaining ld by the number of maximum blocks that are still to come
+            segment_allotted_ld = self.ld_spend/depth
+            # and alter that amount up to + or - the configured variance (%)
+            # technically this means that the last event might end up giving away some 'free' ld but that's ok
+            ld_variation = random.randrange(0, math.floor(segment_allotted_ld*self.config.ld_variance))
+            ld_variation = -ld_variation if random.randrange(0, 2) else ld_variation
+            segment_allotted_ld += ld_variation
 
             # remove it from the pool for next block
             self.ld_spend -= segment_allotted_ld
 
             print("segment ld")
             print(segment_allotted_ld)
+            ld_active = self.can_we_has_ld(segment_allotted_ld, depth)
+            if ld_active:
+                print("ld on :I")
 
-            ld_per_outcome = segment_allotted_ld/len(current_block.segments)
-
-            current_block_outcomes = list(map(lambda s: (self.outcome_calculator(s, ld_per_outcome)),
+            current_block_outcomes = list(map(lambda s: (self.outcome_calculator(s, ld_active)),
                                               current_block.segments))
             for outcome in current_block_outcomes:
                 results.append(outcome)
@@ -235,6 +247,8 @@ class Wrgrbrler:
 
         return results
 
+    def can_we_has_ld(self, segment_allocation, depth):
+        return (segment_allocation > self.ld_activation/depth * (random.randrange(0,20)/ 10))
 
 
     def get_event(self, event_attributes):
@@ -247,7 +261,7 @@ class Wrgrbrler:
 
         outcome_list = self.generate_outcome_list(event.blocks)
         for outcome in outcome_list:
-            event_text = "{0} {1}".format(event_text, outcome.text)
+            event_text = "::: {0} {1} (conn: {2}) :::".format(event_text, outcome.text, outcome.connotation)
 
         # generate text with @string parameters(crumbs), then fill those in with more generated stuff.
         event.text = self.stuff_the_blanks(event_text[1:])
@@ -339,9 +353,9 @@ def main():
     # also for now we don't need multiple, stick to one
     peep_name = parser.get('setup', 'peep_name')
     peep_gender = int(parser.get('setup', 'peep_gender'))
-    config = Config(int(parser.get('setup', 'peep_ld')),
-                    int(parser.get('setup', 'ld_spend')),
-                    float(parser.get('setup', 'ld_variance')))
+
+    with open("config_v2", 'r') as yaml_config:
+        config = yaml.load(yaml_config)
 
     peep_attrib = []
     for kvp in str.split(parser.get('setup', 'peep_attrib'), ';'):
@@ -365,6 +379,9 @@ def main():
 
     ##remove later
     events.append(garbler.get_event(template['events'][1]))
+
+    if garbler.ld_spend > 0:
+        print("looks like there's some ld left.. ld: {0}".format(garbler.ld_spend))
 
     manifest = Manifest(peep, places, events)
 

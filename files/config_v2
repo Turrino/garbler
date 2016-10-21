@@ -1,0 +1,6 @@
+!!python/object:Manifest.Config {
+  ld_activator: 0.65,
+  ld_spend: 40,
+  ld_variance: 0.75, # the higher, the least likely to activate
+  starting_ld: 50
+  }

@@ -32,6 +32,10 @@ Items drops:
 
 Lucky Dust (LD)
     Can be carried, not an item. Affects events. The amount carried is defined at the start of the events.
+    Note about branch length and dust: currently we distribute ld at each segment, using the deepest possible branch
+    as a distribution parameter. However, if the branch is the deepest branch is not the one we actually go through,
+    we end up with shorter brnaches having an unfair ld allocation. At the moment the solution is to keep the depth
+    of all branches similar (+/- 10%), but this needs fixing somehow.
 
 Peeps	
 	Properties
