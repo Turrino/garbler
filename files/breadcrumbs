@@ -51,11 +51,26 @@
                             "outcomes":
                              [
                                 { "text": "outcome 1",
-                                "connotation": "+", "drops": { "ld": 10, "items": [["type_a",5,50],["type_b",1,100]] }},
+                                "connotation": "+", "drops": { "ld": 10, "items": [["type_a",5,50],["type_b",1,100]] },
+                                "canvassing" : {
+                                    "backdrop": 1,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 2",
-                                "connotation": "-", "drops": { "ld": -10, "items": [["type_a",5,50],["type_b",1,100]] }},
+                                "connotation": "-", "drops": { "ld": -10, "items": [["type_a",5,50],["type_b",1,100]] },
+                                "canvassing" : {
+                                    "backdrop": 2,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 3",
-                                "connotation": "=", "drops": { "ld": 10, "items": [["type_a",5,50],["type_b",1,100]] }}
+                                "connotation": "=", "drops": { "ld": 10, "items": [["type_a",5,50],["type_b",1,100]] },
+                                "canvassing" : {
+                                    "backdrop": 3,
+                                    "positions": {}
+                                }
+                                }
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[1,1.1]] }], "lucky_mod": []}
                         },
@@ -63,11 +78,26 @@
                             "outcomes":
                              [
                                 { "text": "outcome 4",
-                                "connotation": "+"},
+                                "connotation": "+",
+                                "canvassing" : {
+                                    "backdrop": 4,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 5",
-                                "connotation": "-"},
+                                "connotation": "-",
+                                "canvassing" : {
+                                    "backdrop": 5,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 6",
-                                "connotation": "="}
+                                "connotation": "=",
+                                "canvassing" : {
+                                    "backdrop": 6,
+                                    "positions": {}
+                                }
+                                }
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[1,1.1]] }], "lucky_mod": []}
                         }
@@ -77,11 +107,26 @@
                             "outcomes":
                              [
                                 { "text": "outcome 1a",
-                                "connotation": "+", "drops": { "ld": 100, "items": [["type_a",5,50],["type_b",1,100]] }},
+                                "connotation": "+", "drops": { "ld": 100, "items": [["type_a",5,50],["type_b",1,100]] },
+                                "canvassing" : {
+                                    "backdrop": 7,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 2a",
-                                "connotation": "-", "drops": { "ld": -100, "items": [["type_a",5,50],["type_b",1,100]] }},
+                                "connotation": "-", "drops": { "ld": -100, "items": [["type_a",5,50],["type_b",1,100]] },
+                                "canvassing" : {
+                                    "backdrop": 8,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 3a",
-                                "connotation": "=", "drops": { "ld": 100, "items": [["type_a",5,50],["type_b",1,100]] }}
+                                "connotation": "=", "drops": { "ld": 100, "items": [["type_a",5,50],["type_b",1,100]] },
+                                "canvassing" : {
+                                    "backdrop": 9,
+                                    "positions": {}
+                                }
+                                }
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[2,1]] }, { "id":"testvalue2", "multi": [[3,1]] }, { "id":"testvalue3", "multi": [[1,1.1]] }], "lucky_mod": []}
                         },
@@ -89,11 +134,26 @@
                             "outcomes":
                              [
                                 { "text": "outcome 4a",
-                                "connotation": "+" },
+                                "connotation": "+" ,
+                                "canvassing" : {
+                                    "backdrop": 1,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 5a",
-                                "connotation": "-"},
+                                "connotation": "-",
+                                "canvassing" : {
+                                    "backdrop": 2,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 6a",
-                                "connotation": "="}
+                                "connotation": "=",
+                                "canvassing" : {
+                                    "backdrop": 3,
+                                    "positions": {}
+                                }
+                                }
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[2,1]] }, { "id":"testvalue2", "multi": [[3,1]] }, { "id":"testvalue3", "multi": [[1,1.1]] }], "lucky_mod": []}
                         }
@@ -110,11 +170,26 @@
                             "outcomes":
                              [
                                 { "text": "outcome 7 (fork2)",
-                                "connotation": "+"},
+                                "connotation": "+",
+                                "canvassing" : {
+                                    "backdrop": 4,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 8 (fork2)",
-                                "connotation": "-"},
+                                "connotation": "-",
+                                "canvassing" : {
+                                    "backdrop": 5,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 9 (fork2)",
-                                "connotation": "="}
+                                "connotation": "=",
+                                "canvassing" : {
+                                    "backdrop": 6,
+                                    "positions": {}
+                                }
+                                }
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "lucky_mod": []}
                         },
@@ -122,11 +197,26 @@
                             "outcomes":
                              [
                                 { "text": "outcome 10 (fork2)",
-                                "connotation": "+"},
+                                "connotation": "+",
+                                "canvassing" : {
+                                    "backdrop": 7,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 11 (fork2)",
-                                "connotation": "-"},
+                                "connotation": "-",
+                                "canvassing" : {
+                                    "backdrop": 8,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 12 (fork2)",
-                                "connotation": "="}
+                                "connotation": "=",
+                                "canvassing" : {
+                                    "backdrop": 9,
+                                    "positions": {}
+                                }
+                                }
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "lucky_mod": []}
                         }
@@ -143,11 +233,26 @@
                             "outcomes":
                              [
                                 { "text": "outcome 7 (fork3)",
-                                "connotation": "+"},
+                                "connotation": "+",
+                                "canvassing" : {
+                                    "backdrop": 1,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 8 (fork3)",
-                                "connotation": "-"},
+                                "connotation": "-",
+                                "canvassing" : {
+                                    "backdrop": 2,
+                                    "positions": {}
+                                }
+                                },
                                 { "text": "outcome 9 (fork3)",
-                                "connotation": "="}
+                                "connotation": "=",
+                                "canvassing" : {
+                                    "backdrop": 3,
+                                    "positions": {}
+                                }
+                                }
                              ],
                             "filtr" : { "char_mod": [{ "id":"testvalue1", "multi": [[1,1]] }, { "id":"testvalue2", "multi": [[2,1]] }, { "id":"testvalue3", "multi": [[3,1]] }], "lucky_mod": []}
                         }

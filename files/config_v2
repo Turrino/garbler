@@ -1,6 +1,17 @@
-!!python/object:Manifest.Config {
-  ld_activator: 0.65,
-  ld_spend: 40,
-  ld_variance: 0.75, # the higher, the least likely to activate
-  starting_ld: 50
-  }
+peep: !!python/object:Manifest.ConfigObj {
+    name: yalla,
+    attribs: [
+      !!python/object:Manifest.Attribute {id: testvalue1, level: 0},
+      !!python/object:Manifest.Attribute {id: testvalue2, level: 0},
+      !!python/object:Manifest.Attribute {id: testvalue3, level: 2} ],
+    gender: 0,
+}
+garbler: !!python/object:Manifest.ConfigObj {
+    template: simple,
+    #multiplier, 1 = has no effect, >1 increases randomness, <1 makes other modifiers more relevant
+    random_mod: 1,
+    ld_activator: 0.65,
+    ld_spend: 40,
+    ld_variance: 0.75, # the higher, the least likely to activate
+    starting_ld: 50
+}

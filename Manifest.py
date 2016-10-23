@@ -20,10 +20,19 @@ class Place:
         #to do: uh, something to define the place better if we need to (if not, remove this class)
 
 class Outcome:
-    def __init__(self, text, connotation):
+    def __init__(self, text, connotation, canvassing):
         self.text = text
         self.connotation = connotation
         self.drops = []
+        self.canvassing = canvassing
+
+
+class Canvassing:
+    def __init__(self, backdrop_id, positions):
+        self.backdrop_id = backdrop_id
+        self.positions = positions
+        self.ld_sparkle = False # when the outcome was altered by the use of ld, use this indicator
+
 
 #Modifiers stem from characters, items and possibly other things too. Some mods are unique to each category,
 #while some are common and may stack (e.g. an item increasing a mod that a character already has).
@@ -63,6 +72,7 @@ class SegmentBlock:
 
 class Event:
     def __init__(self, event_args, blocks):
+        self.calculated_outcomes = []
         self.type = event_args['type']
         self.mood = event_args['mood']
         self.blocks = blocks
@@ -81,12 +91,10 @@ class Item:
             description += " {0} attr: {1}".format(attr.id, attr.level)
         return description
 
-class Config:
-    def __init__(self, starting_ld, ld_spend, ld_variance, ld_activator):
-        self.starting_ld = starting_ld
-        self.ld_spend = ld_spend
-        self.ld_variance = ld_variance
-        self.ld_activator = ld_activator
+class ConfigObj:
+    def __init__(self, name):
+        self.name = name
+
 
         # to do:
         #self.place = event_args["place"]

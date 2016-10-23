@@ -10,14 +10,14 @@ from PIL import Image, ImageFilter
 
 
 class Wrgrbrler:
-    def __init__(self, parsed_crumbs, peep, config, random_mod):
+    def __init__(self, parsed_crumbs, peep, config):
         self.crumbs = parsed_crumbs
         self.peep = peep
         self.config = config
         self.ld_spend = config.ld_spend
         self.ld_activation = config.starting_ld*config.ld_activator
         peep.desc = self.writerer(self.crumbs['characters'], peep.gender)
-        self.random_mod = random_mod
+        self.random_mod = config.random_mod
         # how many event-level patterns can we choose from
         self.event_pattern_range = len(self.crumbs['event_patterns'])
 
@@ -148,6 +148,7 @@ class Wrgrbrler:
             print("sparkly sparkle")
             for otc in segment.outcomes:
                 if otc.connotation == '+':
+                    otc.canvassing.ld_sparkle = True
                     finalised = otc
                     break
 
@@ -263,24 +264,33 @@ class Wrgrbrler:
         for outcome in outcome_list:
             event_text = "::: {0} {1} (conn: {2}) :::".format(event_text, outcome.text, outcome.connotation)
 
+        event.calculated_outcomes = outcome_list
+
         # generate text with @string parameters(crumbs), then fill those in with more generated stuff.
         event.text = self.stuff_the_blanks(event_text[1:])
+
 
         return event
 
 
-def drawerer():
-    combined = Image.new('RGBA', (100, 300), color=50)
+def drawerer(outcomes):
+    combined = Image.new('RGBA', (100, len(outcomes)*100), color=50)
 
-    part1 = Image.open('{0}.png'.format(random.randrange(1, 9)))
-    part2 = Image.open('{0}.png'.format(random.randrange(1, 9)))
-    part3 = Image.open('{0}.png'.format(random.randrange(1, 9)))
+    position = 0
 
-    combined.paste(part1, (0, 0))
-    combined.paste(part2, (0, 100))
-    combined.paste(part3, (0, 200))
+    for outcome in outcomes:
+        piece = assemble_canvas(outcome.canvassing)
+        combined.paste(piece, (0, position))
+        position += 100
 
     return combined
+
+def assemble_canvas(canvas):
+    #to do: assemble all the pieces!
+    img = Image.open('{0}.png'.format(canvas.backdrop_id))
+    if canvas.ld_sparkle:
+        img.paste(Image.open('ldstar.png'), (90, 1))
+    return img
 
 
 def build_event_pattern(blocklist):
@@ -312,7 +322,8 @@ def build_event_pattern(blocklist):
             # this is where the actual text options are (1 for each outcome)
             outcomes = []
             for outcome in segment["outcomes"]:
-                out = Outcome(outcome["text"], outcome["connotation"])
+                canvassing = Canvassing(outcome["canvassing"]["backdrop"], outcome["canvassing"]["positions"])
+                out = Outcome(outcome["text"], outcome["connotation"], canvassing)
                 if "drops" in outcome:
                     out.drops = outcome["drops"]
                 outcomes.append(out)
@@ -323,8 +334,6 @@ def build_event_pattern(blocklist):
             ch_mods = []
             for mod in filter_data["char_mod"]:
                 ch_mods.append(Modifier(mod["id"], mod["multi"]))
-                ### TO DO: implement item and lucky (and any other needed) mods.
-                ###  right now we don't even parse them because cba
             filter = Filter(ch_mods, [], [])
             segments.append(Segment(outcomes, filter))
 
@@ -334,42 +343,28 @@ def build_event_pattern(blocklist):
 
 
 def main():
-    parser = ConfigParser()
-    parser.read('../config')
 
-    crumbs = None
+    with open("config_v2", 'r') as yaml_config:
+        configs = yaml.load(yaml_config)
+
+    peep_config = configs["peep"]
+    garbler_config = configs["garbler"]
+
     with open('breadcrumbs') as crumbs_file:
         crumbs = json.load(crumbs_file)
 
-    template_name = parser.get('setup', 'template')
+    template_name = garbler_config.template
     template = crumbs['templates'][template_name]
     # Assuming one event needs only place only - can change later
     events_count = len(template['events'])
 
-    # this is a multiplier, the higher the value = more random events, less influence by modifiers
-    rm = float(parser.get('setup', 'random_mod'))
+    #remove once we have data coming from the proper source
+    peep = Peep(peep_config.name, peep_config.attribs, peep_config.gender)
+    peep.ld = garbler_config.starting_ld-garbler_config.ld_spend
 
-    # to do - remove this later, input will come from actual character(s)
-    # also for now we don't need multiple, stick to one
-    peep_name = parser.get('setup', 'peep_name')
-    peep_gender = int(parser.get('setup', 'peep_gender'))
-
-    with open("config_v2", 'r') as yaml_config:
-        config = yaml.load(yaml_config)
-
-    peep_attrib = []
-    for kvp in str.split(parser.get('setup', 'peep_attrib'), ';'):
-        split_kvp = str.split(kvp, ',')
-        peep_attrib.append(Attribute(split_kvp[0], int(split_kvp[1])))
-
-    peep = Peep(peep_name, peep_attrib, peep_gender)
-    peep.ld = config.starting_ld - config.ld_spend
     places = []
-    events = []
 
-    garbler = Wrgrbrler(crumbs, peep, config, rm)
-
-    drawed = drawerer()
+    garbler = Wrgrbrler(crumbs, peep, garbler_config)
 
     for x in range(0, events_count):
         places.append(garbler.get_place())
@@ -378,20 +373,23 @@ def main():
         # events.append(garbler.get_event(template['events'][x]))
 
     ##remove later
-    events.append(garbler.get_event(template['events'][1]))
+    event = garbler.get_event(template['events'][1])
+
+    drawed = drawerer(event.calculated_outcomes)
 
     if garbler.ld_spend > 0:
         print("looks like there's some ld left.. ld: {0}".format(garbler.ld_spend))
 
-    manifest = Manifest(peep, places, events)
+    manifest = Manifest(peep, places, [event])
 
-    # drawed.show()
+    drawed.show()
+
     print('{0}, the {1}, went to a {2}, had lunch at a {3}, ended up in a {4}'
           .format(peep.name, peep.desc, places[0].name, places[1].name, places[2].name))
     print('{0} gender is {1}. lucky dust: {2}'
           .format(peep.desc, peep.gender, peep.ld))
-    for event in events:
-        print('event: {0} {1}: {2}'.format(event.type, event.mood, event.text))
+
+    print('event: {0} {1}: {2}'.format(event.type, event.mood, event.text))
 
     print('Loot: ')
     for item in peep.items:
