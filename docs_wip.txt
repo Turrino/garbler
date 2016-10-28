@@ -47,9 +47,24 @@ Location
 Event
 	Properties
 		Mood: determines the direction this event will take. 0: downward, 1: neutral, 2: upward			
-		
+
+
+Image generation
+    Overlays
+        Channels:
+            ff00ff (pink) = ?
+            ffaa00 (orange) = ?
+            ff0000 (red) = ?
+            d4ff00 (lime) = ?
+            00ff55 (green) = ?
+            00ffff (cyan) = ?
+            0055ff (blue) = ?
+            5500ff (violet) = ?
+
 		
 To do's:
 - Schema check on the breadcrums, e.g.: a single item in a crumlist in an event crumbset can be a single item (1 item = universal mood, gets picked regardless),
 	or a list. If it is a list, it must have 3 items (mood subsets).
 	Otherwise the garbler might crash at runtime if it tries to fetch a mood that does not exist.
+
+

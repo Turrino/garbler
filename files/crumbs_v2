@@ -1,0 +1,51 @@
+{
+  #This is all placeholdery stuff
+
+    characters:
+        [[[Ex-girlfriend, Ex-boyfriend], Vegan, Smelly, Selfie-Addict, Feral],
+        [Shoe-maker, [Segway-Creaturess, Segway-Creature], Solicitor, [Ballerina, Ballerino], Ghost],
+        [of the Bearded Armpit, of the Shining Eyebrow, of the Cheeky Cheese, Master of unemployment, of Aggravated Pasta-Stealing, with Splendid Neck-Gills]],
+
+   creatures:
+        [[[Ex-girlfriend, Ex-boyfriend], Vegan, Smelly, Selfie-Addict, Feral],
+        [Shoe-maker, [Segway-Creaturess, Segway-Creature], Solicitor, [Ballerina, Ballerino], Ghost],
+        [of the Bearded Armpit, of the Shining Eyebrow, of the Cheeky Cheese, Master of unemployment, of Aggravated Pasta-Stealing, with Splendid Neck-Gills]],
+
+   event_types:
+   [intro, basic, outro],
+
+   item_attributes_matrix:
+        {type_a: [testvalue_x, testvalue_y, testvalue_a, testvalue_b, testvalue_c, testvalue_d, testvalue_e],
+        type_b: [testvalue_z, testvalue_w]},
+
+   items:
+        {type_a:
+            [[illustrious, boring, legendary,fetid, craft],
+            [talisman, saber-tooth, cookie-dough, halberd, cup-holder, asbestos stove],
+            [of dust-sweeping, of doom, of flames, limited edition, holster, toy, in the shape of a rabbit]],
+        type_b:
+            [[counterfeit, astounding, boring, so-so, godly, assault, surprising],
+            [bath-robe, eye-patch, chain-mail, tutu, banana costume],
+            [with shiny bells, on fire, of triple-chaos, replica, studded with diamonds]]
+        },
+
+   locations:
+        [[Underground, Imaginary, Retro, Post-Apocalyptic, Smelly],
+        [Water Cooler, Kinder-Garden, Chippy, Tea Rooms, Laundry],
+        [of Dooom, in Asbestos coating, with bad music, with buffet, filled with lava, owned by lizard-men]],
+
+   replacements:
+        [creatures, items],
+
+   templates:
+        {simple:
+            {events:
+                [{mood: 1, type: intro},
+                {mood: 0, type: basic},
+                {mood: 2, type: basic},
+                {mood: 0, type: basic},
+                {mood: 2, type: outro}]
+            }
+        }
+
+}

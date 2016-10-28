@@ -1,0 +1,128 @@
+{ blocks:
+    [{
+        id: '1',
+            
+        variants:
+        [[
+            {outcomes:
+               [{text: outcome 1, canvas_id: 1, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 2, canvas_id: 2, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 3, canvas_id: 3, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            },
+            
+            {outcomes:
+               [{text: outcome 4, canvas_id: 4, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 5, canvas_id: 5, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 6, canvas_id: 6, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            }
+        ],
+        [
+            {outcomes:
+               [{text: outcome 1a, canvas_id: 1, connotation: w, drops: {items: [[type_b, 5, 50], [type_a, 1, 100]], ld: 10}},
+                {text: outcome 2a, canvas_id: 2, connotation: l, drops: {items: [[type_b, 5, 50], [type_a, 1, 100]], ld: -10}},
+                {text: outcome 3a, canvas_id: 3, connotation: n, drops: {items: [[type_b, 5, 50], [type_a, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            },
+            
+            {outcomes:
+               [{text: outcome 4a, canvas_id: 4, connotation: w, drops: {items: [[type_b, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 5a, canvas_id: 5, connotation: l, drops: {items: [[type_b, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 6a, canvas_id: 6, connotation: n, drops: {items: [[type_b, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            }
+        ]],
+
+        fork:
+            [{key: w, pointer: { text: ' after this(w), go to sample block 2 ', to_id: '2'}},
+            {key: l, pointer: {text: ' after this(l), go to sample block 3 ', to_id: '3'}},
+            {key: n, pointer: {text: ' after this(n), go to sample block 2 ', to_id: '2'}}]
+    },
+    {
+        id: '2',
+            
+        variants:
+        [[
+            {outcomes:
+               [{text: outcome 7, canvas_id: 1, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 8, canvas_id: 2, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 9, canvas_id: 3, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            },
+            
+            {outcomes:
+               [{text: outcome 10, canvas_id: 4, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 11, canvas_id: 5, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 12, canvas_id: 6, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            }
+        ],
+        [
+            {outcomes:
+               [{text: outcome 7a, canvas_id: 1, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 8a, canvas_id: 2, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 9a, canvas_id: 3, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            },
+            
+            {outcomes:
+               [{text: outcome 10a, canvas_id: 4, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 11a, canvas_id: 5, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 12a, canvas_id: 6, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            }
+        ]],
+        
+        fork: []
+    },
+    {
+        id: '3',
+            
+        variants:
+        [[
+            {outcomes:
+               [{text: outcome 7b, canvas_id: 7, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 8b, canvas_id: 8, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 9b, canvas_id: 9, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            },
+            
+            {outcomes:
+               [{text: outcome 10b, canvas_id: 7, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 11b, canvas_id: 8, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 12b, canvas_id: 9, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            }
+        ],
+        [
+            {outcomes:
+               [{text: outcome 7c, canvas_id: 7, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 8c, canvas_id: 8, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 9c, canvas_id: 9, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            },
+            
+            {outcomes:
+               [{text: outcome 10c, canvas_id: 7, connotation: w, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}},
+                {text: outcome 11c, canvas_id: 8, connotation: l, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: -10}},
+                {text: outcome 12c, canvas_id: 9, connotation: n, drops: {items: [[type_a, 5, 50], [type_b, 1, 100]], ld: 10}}],
+            filtr:
+            {char_mod: [{id: testvalue1, multi: [[1, 1]]}, {id: testvalue2, multi: [[2, 1]]}, {id: testvalue3, multi: [[1, 1.1]]}]}
+            }
+        ]],
+        
+        fork: []
+    }]
+}

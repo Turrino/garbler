@@ -20,19 +20,20 @@ class Place:
         #to do: uh, something to define the place better if we need to (if not, remove this class)
 
 class Outcome:
-    def __init__(self, text, connotation, canvassing):
+    def __init__(self, text, connotation, canvas_id):
         self.text = text
         self.connotation = connotation
         self.drops = []
-        self.canvassing = canvassing
+        self.canvas_id = canvas_id
+        self.ld_sparkle = False  # when the outcome was altered by the use of ld, use this indicator
 
 
-class Canvassing:
-    def __init__(self, backdrop_id, positions):
-        self.backdrop_id = backdrop_id
-        self.positions = positions
-        self.ld_sparkle = False # when the outcome was altered by the use of ld, use this indicator
-
+class Canvas:
+    def __init__(self, identifier, background, overlay, static=None):
+        self.id = identifier
+        self.background = background
+        self.overlay = overlay
+        self.static = static
 
 #Modifiers stem from characters, items and possibly other things too. Some mods are unique to each category,
 #while some are common and may stack (e.g. an item increasing a mod that a character already has).
@@ -94,6 +95,8 @@ class Item:
 class ConfigObj:
     def __init__(self, name):
         self.name = name
+
+
 
 
         # to do:
