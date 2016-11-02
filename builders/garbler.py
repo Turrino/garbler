@@ -1,6 +1,7 @@
 from collections import Counter
 import random
 import math
+import re
 from Manifest import *
 
 
@@ -26,11 +27,31 @@ class Garbler:
 
 
     def stuff_the_blanks(self, parameters_text):
-        while parameters_text.find('@') > 0:
-            for replacement in self.crumbs['replacements']:
-                # the last parameter limits replacements to 1 so that if the text has two items in the same category
-                # we don't end up with duplicates. if an item is speshul and needs to be repeated, then make a diff method
-                parameters_text = parameters_text.replace("@{0}@".format(replacement), self.get_element(replacement), 1)
+        displayables = []
+
+        #test, remove
+        #parameters_text = 'bla @items#3,1@ and @items#4@ and blah and this one @creatures@ blah'
+
+        positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
+        if len(positions) % 2 != 0:
+            raise ValueError("tags (@) are not even in text: {0}".format(parameters_text))
+
+        subs = []
+        overlay_metadata = []
+        for i in range(0, len(positions), 2):
+            #create a list of (replacement type, [repl startpos, repl endpos])
+            subs.append((parameters_text[positions[i]:positions[i+1]+1], [positions[i], positions[i+1]+1]))
+        for sub in subs:
+            replacement = sub[0]
+            display_data = replacement.find('#')
+            if display_data: #trim+save the overlay data and leave the clean replacement
+                splat = replacement.split('#')
+                overlay_pos = (splat[1][:-1]).split(',') if replacement.find(',') else splat[1][:-1]
+                overlay_metadata.append((splat[0][1:], overlay_pos)) #to do: fill metadata with more information than just the replacement type/channel
+                replacement = splat[0][1:]
+            #TO DO: fix this so it doesn't crash. + add the option to save metadata to pass down to other outcomes.
+            parameters_text = parameters_text[:sub[1][0]] + self.get_element(replacement) + parameters_text[sub[1][1]:]
+
         return parameters_text
 
 

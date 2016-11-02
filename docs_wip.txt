@@ -52,15 +52,15 @@ Event
 Image generation
     Overlays
         Channels:
-            ff00ff (pink) = ?
-            ffaa00 (orange) = ?
-            ff0000 (red) = ?
-            d4ff00 (lime) = ?
-            00ff55 (green) = ?
-            00ffff (cyan) = ?
-            0055ff (blue) = ?
-            5500ff (violet) = ?
-
+        Eigth channels for now, if we ever need more: make this more flexible.
+            (255, 0, 0) (red) = ?
+            (255, 170, 0) (orange) = ?
+            (212, 255, 0) (lime) = ?
+            (0, 255, 85) (green) = ?
+            (0, 255, 255) (cyan) = ?
+            (0, 85, 255) (blue) = ?
+            (85, 0, 255) (violet) = ?
+            (255, 0, 255) (pink) = ?
 		
 To do's:
 - Schema check on the breadcrums, e.g.: a single item in a crumlist in an event crumbset can be a single item (1 item = universal mood, gets picked regardless),

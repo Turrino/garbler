@@ -11,6 +11,7 @@ from contextlib import contextmanager
 from PIL import Image, ImageFilter
 
 class Drawerer:
+
     def __init__(self, metadata):
         if metadata is None:
             self.metadata = self.recreate_metadata()
@@ -38,32 +39,53 @@ class Drawerer:
 
 
     def get_overlay_metadata(self, overlay_image):
+        parsed_overlay = {}
+
+        for ch in self.channels:
+            parsed_overlay[ch] = []
 
         overlay = Image.open(overlay_image)
-        # to do parse metadata
-        return [1,2,3]
+        pixels = overlay.load()
+        for x in range(0, overlay.width):
+            for y in range(0, overlay.height):
+                if pixels[x,y] != (0,0,0):
+                    if pixels[x,y] in self.channels:
+                        parsed_overlay[pixels[x,y]].append((x,y))
+                    else:
+                        raise ValueError("found a pixel with unrecognized RGB overlay value")
+
+        return parsed_overlay
 
     def recreate_metadata(self):
         Canvasses = {}
 
         overlays = os.listdir("pictures/tiles/overlay")
         statics = os.listdir("pictures/tiles/static")
-        overlay = "pictures/tiles/overlay/default_overlay.png"
 
         for filename in os.listdir("pictures/tiles/background"):
-            static = None
-            if filename in overlays:
-                overlay = self.get_overlay_metadata(os.path.join("pictures/tiles/overlay", filename))
-            if filename in statics:
-                static = os.path.join("pictures/tiles/static", filename)
+
+            overlay_file = filename if filename in overlays else "default_overlay.png"
+            overlay = self.get_overlay_metadata(os.path.join("pictures/tiles/overlay", overlay_file))
+
+            static = os.path.join("pictures/tiles/static", filename) if filename in statics else None
 
             canvas_id = int(filename.replace(".png", ""))
+
             Canvasses[canvas_id] = Canvas(canvas_id, filename, overlay, static)
 
         return Canvasses
 
+    # overlay colours
+    ch1 = (255, 0, 0) #red
+    ch2 = (255, 170, 0) # orange
+    ch3 = (212, 255, 0) # lime
+    ch4 = (0, 255, 85) # green
+    ch5 = (0, 255, 255) # cyan
+    ch6 = (0, 85, 255) # blue
+    ch7 = (85, 0, 255) # violet
+    ch8 = (255, 0, 255) # pink
 
-
+    channels = [ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8]
 
 
 @contextmanager
