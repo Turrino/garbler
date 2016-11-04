@@ -48,6 +48,19 @@ Event
 	Properties
 		Mood: determines the direction this event will take. 0: downward, 1: neutral, 2: upward			
 
+Replacements syntax:
+    Replacements must start and end with the @ character and match an element in the crumbs: "i want an @items@"
+    If they are to be displayed, they have to use the # tag, followed by the overlay channel index,
+    before the closing @ tag: "i want an @items#1@"
+    To specify the position in the overlay channel, use two comma separated numbers: "i want an @items#2,5@"
+    To indicate a replacement that does not live directly under the root of the crumbs,
+     specify the path separated by commas: "i want an @items,type_a#2,5@"
+    To get a replacement without specifying the path past a certain level (sub type is chosen at random),
+     use the ~ tag: "i want an @items,~#2,5@"
+    To specify a subset (e.g. male, female), use the $ tag followed by the subset index: "i want an @items,~$0#2,5@"
+
+    For any of the above: do not include spaces.
+
 
 Image generation
     Overlays

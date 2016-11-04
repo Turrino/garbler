@@ -25,8 +25,8 @@ class Outcome:
         self.connotation = connotation
         self.drops = []
         self.canvas_id = canvas_id
+        self.displayables = []
         self.ld_sparkle = False  # when the outcome was altered by the use of ld, use this indicator
-
 
 class Canvas:
     def __init__(self, identifier, background, overlay, static=None):

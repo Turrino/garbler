@@ -27,10 +27,8 @@ class Garbler:
 
 
     def stuff_the_blanks(self, parameters_text):
-        displayables = []
-
         #test, remove
-        #parameters_text = 'bla @items#3,1@ and @items#4@ and blah and this one @creatures@ blah'
+        #parameters_text = 'bla @items,type_a@ and @items,~#4@ and blah and this one @creatures$0@'
 
         positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
         if len(positions) % 2 != 0:
@@ -41,18 +39,38 @@ class Garbler:
         for i in range(0, len(positions), 2):
             #create a list of (replacement type, [repl startpos, repl endpos])
             subs.append((parameters_text[positions[i]:positions[i+1]+1], [positions[i], positions[i+1]+1]))
-        for sub in subs:
-            replacement = sub[0]
-            display_data = replacement.find('#')
-            if display_data: #trim+save the overlay data and leave the clean replacement
-                splat = replacement.split('#')
-                overlay_pos = (splat[1][:-1]).split(',') if replacement.find(',') else splat[1][:-1]
-                overlay_metadata.append((splat[0][1:], overlay_pos)) #to do: fill metadata with more information than just the replacement type/channel
-                replacement = splat[0][1:]
-            #TO DO: fix this so it doesn't crash. + add the option to save metadata to pass down to other outcomes.
-            parameters_text = parameters_text[:sub[1][0]] + self.get_element(replacement) + parameters_text[sub[1][1]:]
 
-        return parameters_text
+        replacements = []
+        parameters_text = parameters_text.split('@')
+
+        for sub in subs:
+            replacement = sub[0][1:-1]
+
+            subset = replacement.find('$')
+            if subset > -1:
+                splat =  replacement.split('$')
+                replacement = splat[0] + splat[1][1:] # take the $ tag and subset out, put the rest back
+                subset = int(splat[1][:1])
+
+            display_data = replacement.find('#')
+            if display_data > -1: #trim+save the overlay data and leave the clean replacement
+                splat = replacement.split('#')
+                overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
+                # to do: fill metadata with more information than just the replacement type/channel
+                overlay_metadata.append((splat[0], overlay_pos))
+                replacement = splat[0]
+
+            # TO DO: add the option to save metadata to pass down to other outcomes.
+            replacements.append(self.get_element(replacement.split(','), subset))
+
+        filled_in_text = ""
+
+        trail = parameters_text[-1:][0] if len(parameters_text) % 2 != 0 else ""
+
+        for i in range(0, len(parameters_text) - 1, 2):
+            filled_in_text += parameters_text[i] + replacements[int(i/2)]
+
+        return filled_in_text+trail, overlay_metadata
 
 
     def writerer(self, crumbset, subset=None):
@@ -83,14 +101,19 @@ class Garbler:
         peep.desc = self.writerer(self.crumbs['characters'], gender)
         return peep
 
-
     def get_place(self, gender=None):
         return Place(self.writerer(self.crumbs['locations']))
 
-
-    def get_element(self, category):
-        return self.writerer(self.crumbs[category], -1)
-
+    # accepts a list of strings that indicate the crumbs path to the desired element
+    def get_element(self, category_path, subset: -1):
+        category = self.crumbs
+        for element in category_path:
+            if element == '~':
+                while type(category) is not list:
+                    category = category[random.choice(list(category.keys()))]
+            else:
+                category = category[element]
+        return self.writerer(category, subset)
 
     def create_item(self, item_drop):
         name = self.writerer(self.crumbs["items"][item_drop[0]])
@@ -284,13 +307,13 @@ class Garbler:
 
         outcome_list = self.generate_outcome_list(event.blocks)
         for outcome in outcome_list:
-            event_text = "::: {0} {1} (conn: {2}) :::".format(event_text, outcome.text, outcome.connotation)
+            #parse the @ parameters and store their metadata in the outcome
+            parsed_parameters = self.stuff_the_blanks(outcome.text)
+            outcome.displayables = parsed_parameters[1]
+            event_text = "::: {0} {1} (conn: {2}) :::".format(event_text, parsed_parameters[0], outcome.connotation)
 
         event.calculated_outcomes = outcome_list
-
-        # generate text with @string parameters(crumbs), then fill those in with more generated stuff.
-        event.text = self.stuff_the_blanks(event_text[1:])
-
+        event.text = event_text
 
         return event
 
