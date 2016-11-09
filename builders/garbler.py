@@ -16,13 +16,15 @@ class Garbler:
         self.random_mod = config.random_mod
         # how many event-level patterns can we choose from
         self.event_pattern_range = len(self.crumbs['event_patterns'])
+        self.crumb_map = {}
+        self.map_crumblist(self.crumbs)
 
 
-    def any_of_many(self, crumblist, discard_item=True):
-        randomness = random.randrange(0, len(crumblist))
-        item = crumblist[randomness]
+    def any_of_many(self, elements, discard_item=True):
+        randomness = random.randrange(0, len(elements))
+        item = elements[randomness]
         if discard_item:
-            crumblist.remove(item)
+            elements.remove(item)
         return item
 
 
@@ -35,10 +37,11 @@ class Garbler:
             raise ValueError("tags (@) are not even in text: {0}".format(parameters_text))
 
         subs = []
-        overlay_metadata = []
         for i in range(0, len(positions), 2):
             #create a list of (replacement type, [repl startpos, repl endpos])
             subs.append((parameters_text[positions[i]:positions[i+1]+1], [positions[i], positions[i+1]+1]))
+
+        metadata = {}
 
         replacements = []
         parameters_text = parameters_text.split('@')
@@ -48,20 +51,24 @@ class Garbler:
 
             subset = replacement.find('$')
             if subset > -1:
-                splat =  replacement.split('$')
+                splat = replacement.split('$')
                 replacement = splat[0] + splat[1][1:] # take the $ tag and subset out, put the rest back
                 subset = int(splat[1][:1])
 
-            display_data = replacement.find('#')
-            if display_data > -1: #trim+save the overlay data and leave the clean replacement
+            overlay_pos = []
+            display_data = True if replacement.find('#') > -1 else False
+            if display_data: #trim+save the overlay data and leave the clean replacement
                 splat = replacement.split('#')
                 overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
-                # to do: fill metadata with more information than just the replacement type/channel
-                overlay_metadata.append((splat[0], overlay_pos))
-                replacement = splat[0]
+                replacement = splat[0].split(',')
+            else:
+                replacement = replacement.split(',')
 
-            # TO DO: add the option to save metadata to pass down to other outcomes.
-            replacements.append(self.get_element(replacement.split(','), subset))
+            parsed_repl = self.get_element(replacement, subset)
+            replacements.append(parsed_repl[0][0])
+
+            metadata[parsed_repl[0][0]] = { "keys": parsed_repl[0][1], "display": display_data,
+                                         "type_path": parsed_repl[1], "position": overlay_pos }
 
         filled_in_text = ""
 
@@ -70,10 +77,10 @@ class Garbler:
         for i in range(0, len(parameters_text) - 1, 2):
             filled_in_text += parameters_text[i] + replacements[int(i/2)]
 
-        return filled_in_text+trail, overlay_metadata
+        return filled_in_text+trail, metadata
 
-
-    def writerer(self, crumbset, subset=None):
+    #use get_meta to return both the string and the metadata
+    def writerer(self, crumblist, subset=None, get_meta=False):
         fetch_crumb = self.any_of_many
 
         # We use this only if a subset parameter (mood, gender...) is passed in, in order to access the sub-features
@@ -86,11 +93,17 @@ class Garbler:
             fetch_crumb = fetch_subset
 
         wroted = ""
+        meta = []
 
-        for wordlist in crumbset:
-            wroted = "{0} {1}".format(wroted, fetch_crumb(wordlist))
+        for element_list in crumblist:
+            element = fetch_crumb(element_list)
+            meta.append(element)
+            wroted = "{0} {1}".format(wroted, element)
 
-        return wroted[1:]
+        if get_meta:
+            return wroted[1:], meta
+        else:
+            return wroted[1:]
 
 
     def get_peep(self, name, attrib, gender=None):
@@ -104,19 +117,53 @@ class Garbler:
     def get_place(self, gender=None):
         return Place(self.writerer(self.crumbs['locations']))
 
-    # accepts a list of strings that indicate the crumbs path to the desired element
-    def get_element(self, category_path, subset: -1):
-        category = self.crumbs
-        for element in category_path:
-            if element == '~':
-                while type(category) is not list:
-                    category = category[random.choice(list(category.keys()))]
+    #populates the crumb_map so that crumblists can be accessed without needing to know the explicit path
+    def map_crumblist(self, current_level, c_path = None):
+        if c_path is None:
+            c_path = []
+
+        for element in current_level:
+            if type(current_level[element]) is list:
+                self.crumb_map[element] = c_path
             else:
-                category = category[element]
-        return self.writerer(category, subset)
+                sub_path = c_path[:]
+                sub_path.append(element)
+                self.map_crumblist(current_level[element], sub_path)
+
+    #finds a crumblist using the map
+    def find_crs(self, crumblist):
+        full_path = self.crumb_map[crumblist]
+        result = None
+        for x in full_path:
+            result = self.crumbs[x]
+        return result[crumblist]
+
+    # accepts a list of strings that indicate the crumbs path to the desired element
+    # returns a tuple with: [0][0] actual text, [0][1] metadata lookup keys,
+    # [1] actual path (will differ from category_path if ~ was used)
+    def get_element(self, path, subset: -1):
+
+        crumbs_to_use = self.crumbs
+        actual_path = []
+        if len(path) == 1 and path[0] not in crumbs_to_use.keys():
+            actual_path = "" #self.find_crumblist(path[0])
+            for element in actual_path:
+                crumbs_to_use = crumbs_to_use[element]
+            return self.writerer(crumbs_to_use, subset, True), actual_path
+        else:
+            for element in path:
+                if element == '~':
+                    while type(crumbs_to_use) is not list:
+                        pick = random.choice(list(crumbs_to_use.keys()))
+                        actual_path.append(pick)
+                        crumbs_to_use = crumbs_to_use[pick]
+                else:
+                    actual_path.append(element)
+                    crumbs_to_use = crumbs_to_use[element]
+        return self.writerer(crumbs_to_use, subset, True), actual_path
 
     def create_item(self, item_drop):
-        name = self.writerer(self.crumbs["items"][item_drop[0]])
+        name = self.writerer(self.find_crs(item_drop[0]), False, True)
         tier = random.randrange(1, item_drop[1]+1)
 
         points = tier*2
@@ -160,6 +207,7 @@ class Garbler:
             for item_drop in drops["items"]:
                 if random.randrange(0, 100) < item_drop[2]:
                     self.peep.items.append(self.create_item(item_drop))
+
 
     def outcome_calculator(self, segment, ld_active):
         # 1 is the basic value for an outcome to happen
@@ -309,7 +357,7 @@ class Garbler:
         for outcome in outcome_list:
             #parse the @ parameters and store their metadata in the outcome
             parsed_parameters = self.stuff_the_blanks(outcome.text)
-            outcome.displayables = parsed_parameters[1]
+            outcome.meta = parsed_parameters[1]
             event_text = "::: {0} {1} (conn: {2}) :::".format(event_text, parsed_parameters[0], outcome.connotation)
 
         event.calculated_outcomes = outcome_list

@@ -2,27 +2,34 @@ WRGRBRLER
 
 Breadcrumbs
 	Main level >
-		Crumbsets: templates, characters, locations, etc >
-			Crumblists: a list of positional elements >
-				Positional Element: a word or sentence to be used as building block. e.g. 1/2/3rd component of a name or sentence.
-				Subset: expands a single positional element into a list of positional elements that can be used for contextual reasons (e.g. male/female).
-				Can be any lenght.
-		
-	Specific Crumbsets > 
-		event_patterns: a set of joined crumblists that determines the flair of an event, e.g. a sudden apparition, stopping at a place, etc.
-			It does not determine the outcome or the mood of the event, it is only needed to restrict the amount of building blocks to a coherent set.		
+		Categories: nodes that are only used to categorise lists of crumblists (templates, characters, locations, etc). Can be nested. Has to be a dictionary.
+		    >   Crumblists: a list of lists of positional elements (strings or subsets)
+		        >   Positional Element: a word or sentence to be used as building block. e.g. 1/2/3rd component of a name or sentence.
+				    Subset: expands a single positional element into a list of positional elements that can be used for contextual reasons (e.g. male/female).
+				    Can be any length.
 
-    Events in crumnbs:
+    Events in crumbs:
         Events are structured as Blocks>Variants>Segments>Outcomes
+        Each event pattern lives in its own file (files/events). I
             Block: list of variants and a fork pointing to other blocks
             Variants: lists of segments; one set of segments is randomly chosen (e.g. no multipliers or lucky dust)
             Segment: each segment has multiple possible outcomes, only one is chosen (using multipliers)
             Outcomes: has a text skeleton that goes to compose the overall event; also defines if there are drops or not
                 Drops: defines if an outcome drops lucky dust or not, and any item drops (as well as any other special drop)
 
+
+Metadata lookup (meta_lookup):
+    A dictionary that stores metadata for different kind of objects (both categories and crumblists). The name of the object is the key.
+    Returns an object that contains information that can be used to:
+         - Provide context (e.g. if a generated object is passed around inside an event)
+         - Provide graphical asset information (filename, overlay position, filters, ...)
+    Not all entries in the crumbs need to have a key in here, but if they don't, the information from their parent category will be used instead,
+    all the way up to the root-category level, so at least those need to have the necessary information, or the lookup will fail.
+
+
 Items drops:
     In crumbs: "items" example: [["type_a",2,50],["type_b",1,100]]
-     items is a list of possible drops, each element of the list containing:
+     items is a list of possible drops, each entry in the list containing:
      - Item type
      - Item maximum tier (upper limit for the random range)
      - Rate of drop (percentage points)
@@ -49,16 +56,17 @@ Event
 		Mood: determines the direction this event will take. 0: downward, 1: neutral, 2: upward			
 
 Replacements syntax:
-    Replacements must start and end with the @ character and match an element in the crumbs: "i want an @items@"
-    If they are to be displayed, they have to use the # tag, followed by the overlay channel index,
-    before the closing @ tag: "i want an @items#1@"
-    To specify the position in the overlay channel, use two comma separated numbers: "i want an @items#2,5@"
-    To indicate a replacement that does not live directly under the root of the crumbs,
-     specify the path separated by commas: "i want an @items,type_a#2,5@"
-    To get a replacement without specifying the path past a certain level (sub type is chosen at random),
-     use the ~ tag: "i want an @items,~#2,5@"
+    Replacements must start and end with the @ character and match a crumblist name: "i want an @type_a@"
+    To specify the path of a crumblist, use commas: "i want an @items,type_a#2,5@"
+    If the path is not specified, and a single crumblist name is present, the crumblist's path will be looked up.
+    "@items@" is not valid because it is a category and not a crumblist.
+    To get a replacement without specifying the path past a certain level, use the ~ tag:
+     "i want an @items,~@". Here items with the ~ tag works because the writer will traverse crumbs at random,
+      past the items node, until an actual crumblist is found.
+    If a generated object is to be displayed, use the # tag, followed by the overlay channel index,
+    before the closing @ tag: "i want an @type_a#1@"
+    To specify the position in the overlay channel, use two comma separated numbers: "i want an @type_a#2,5@"
     To specify a subset (e.g. male, female), use the $ tag followed by the subset index: "i want an @items,~$0#2,5@"
-
     For any of the above: do not include spaces.
 
 
@@ -76,8 +84,9 @@ Image generation
             (255, 0, 255) (pink) = ?
 		
 To do's:
-- Schema check on the breadcrums, e.g.: a single item in a crumlist in an event crumbset can be a single item (1 item = universal mood, gets picked regardless),
-	or a list. If it is a list, it must have 3 items (mood subsets).
-	Otherwise the garbler might crash at runtime if it tries to fetch a mood that does not exist.
+- Schema check on the breadcrumbs (ensure that if an event needs to generate something,
+ it will always have sufficient elements to do so, and will not crash)
+	Worst case scenario: garbler crashes, re-run it until it hits a scenario where it has enough assets to work with
+	 (and pretend that nothing happened).
 
 
