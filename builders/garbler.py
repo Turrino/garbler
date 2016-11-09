@@ -17,6 +17,8 @@ class Garbler:
         # how many event-level patterns can we choose from
         self.event_pattern_range = len(self.crumbs['event_patterns'])
         self.crumb_map = {}
+        # temporary, until the matrix has appropriate logic/storage (needs to be ignored or it confuses the mapper because it has the same keys as the items)
+        self.map_ignore = ["item_attributes_matrix"]
         self.map_crumblist(self.crumbs)
 
 
@@ -30,7 +32,7 @@ class Garbler:
 
     def stuff_the_blanks(self, parameters_text):
         #test, remove
-        #parameters_text = 'bla @items,type_a@ and @items,~#4@ and blah and this one @creatures$0@'
+        #parameters_text = 'bla @items,type_a#1,2@ and @items,~#4@ and blah and this one @creatures$0@'
 
         positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
         if len(positions) % 2 != 0:
@@ -60,6 +62,7 @@ class Garbler:
             if display_data: #trim+save the overlay data and leave the clean replacement
                 splat = replacement.split('#')
                 overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
+                overlay_pos = [int(x) for x in overlay_pos]
                 replacement = splat[0].split(',')
             else:
                 replacement = replacement.split(',')
@@ -123,6 +126,8 @@ class Garbler:
             c_path = []
 
         for element in current_level:
+            if (element) in self.map_ignore:
+                continue
             if type(current_level[element]) is list:
                 self.crumb_map[element] = c_path
             else:
@@ -163,7 +168,7 @@ class Garbler:
         return self.writerer(crumbs_to_use, subset, True), actual_path
 
     def create_item(self, item_drop):
-        name = self.writerer(self.find_crs(item_drop[0]), False, True)
+        name = self.writerer(self.find_crs(item_drop[0]), None, True)
         tier = random.randrange(1, item_drop[1]+1)
 
         points = tier*2

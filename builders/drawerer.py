@@ -12,11 +12,11 @@ from PIL import Image, ImageFilter
 
 class Drawerer:
 
-    def __init__(self, metadata):
-        if metadata is None:
-            self.metadata = self.recreate_metadata()
+    def __init__(self, canvas_cache):
+        if canvas_cache is None:
+            self.canvas_cache = self.recreate_cache()
         else:
-            self.metadata = metadata
+            self.canvas_cache = canvas_cache
 
     def combine(self, outcomes):
         combined = Image.new('RGBA', (100, len(outcomes)*100), color=50)
@@ -32,10 +32,23 @@ class Drawerer:
 
     def assemble_canvas(self, outcome):
         # to do: assemble all the pieces!
-        img = Image.open(os.path.join('pictures/tiles/background', self.metadata[outcome.canvas_id].background))
+        canvas = self.canvas_cache[outcome.canvas_id]
+        img = Image.open(os.path.join('pictures/tiles/background', canvas.background))
         if outcome.ld_sparkle:
             img.paste(Image.open('pictures/ldstar.png'), (90, 1))
+        for item in outcome.metadata:
+            if item["display"]:
+                #item_img = self.transmogrify(item["type_path"], item["keys"])
+                item_img = Image.open('pictures/sampletoken.png')
+                coords = canvas.overlay[self.channel_to_rgb[item["position"][0]]][item["position"][1]]
+                img.paste(item_img, coords)
         return img
+
+    # ask for a type to be created, and the drawerer shall return a picture based on the info provided
+    def transmogrify(self, type_path, keys):
+        # to do
+        return None
+
 
 
     def get_overlay_metadata(self, overlay_image):
@@ -56,7 +69,7 @@ class Drawerer:
 
         return parsed_overlay
 
-    def recreate_metadata(self):
+    def recreate_cache(self):
         Canvasses = {}
 
         overlays = os.listdir("pictures/tiles/overlay")
@@ -86,7 +99,7 @@ class Drawerer:
     ch8 = (255, 0, 255) # pink
 
     channels = [ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8]
-
+    channel_to_rgb = { 1:(255, 0, 0),2:(255, 170, 0),3:(212, 255, 0),4:(0, 255, 85),5:(0, 255, 255),6:(0, 85, 255),7:(85, 0, 255),8:(255, 0, 255) }
 
 @contextmanager
 def cd(newdir):
