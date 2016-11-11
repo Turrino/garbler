@@ -17,6 +17,8 @@ class Drawerer:
             self.canvas_cache = self.recreate_cache()
         else:
             self.canvas_cache = canvas_cache
+        self.asset_names = os.listdir(self.assets)
+        self.skeleton_names = os.listdir(self.skeletons)
 
     def combine(self, outcomes):
         combined = Image.new('RGBA', (100, len(outcomes)*100), color=50)
@@ -38,17 +40,68 @@ class Drawerer:
             img.paste(Image.open('pictures/ldstar.png'), (90, 1))
         for item in outcome.metadata:
             if item["display"]:
-                #item_img = self.transmogrify(item["type_path"], item["keys"])
-                item_img = Image.open('pictures/sampletoken.png')
+                item_img = self.transmogrify(item["type_path"], item["keys"])
                 coords = canvas.overlay[self.channel_to_rgb[item["position"][0]]][item["position"][1]]
                 img.paste(item_img, coords)
         return img
 
     # ask for a type to be created, and the drawerer shall return a picture based on the info provided
     def transmogrify(self, type_path, keys):
-        # to do
-        return None
+        skeleton = self.get_skeleton(type_path)
+        assets = self.get_assets(keys)
 
+        skeleton_base = Image.open(os.path.join(self.skeletons, skeleton + self.extension))
+        skeleton_overlay = self.overlay_to_list(self.get_overlay_metadata(
+            os.path.join(self.skeletons, skeleton + self.overlay_ext)))
+
+        # to do: introduce some integrity checks on the data so that this never happens.
+        # but, if we still end up in this situation, do not crash, generate random overlay data instead
+        if len(assets) > len(skeleton_overlay):
+            print(format("Warning: not enough overlay points ({0}) for type {1}. Generating random ones.",
+                         len(skeleton_overlay), keys))
+            for i in range (len(skeleton_overlay), len(assets)):
+                skeleton_overlay.append((random.randrange(0, skeleton_base.size[0]),
+                                        random.randrange(0, skeleton_base.size[1])))
+
+        for i in range(0, len(assets)):
+            if type(assets[i]) is str: # then it's the file path of an asset
+                asset_img = Image.open(os.path.join(self.assets, assets[i]))
+                # [0] is for the first coords tuple in the channel
+                # we probably want only one set of coordinates for each channel in skeleton overlays, tbc)
+                skeleton_base.paste(asset_img, skeleton_overlay[i][0])
+            # to do: elif type(asset) is Filter: ...
+            # and if it's not one of the above, don't do anything - the skeleton base stays as is
+
+        return skeleton_base
+
+    def get_skeleton(self, type_path):
+        type_lookup = list(reversed(type_path))
+
+        for key in type_lookup:
+            expected_filename = key + self.extension
+            if expected_filename in self.skeleton_names:
+                return key  # to do: allow a file to have variants, especially skeletons/overlays
+
+    def get_assets(self, keys):
+        available_assets = []
+
+        for key in keys:
+            # could be either a png, or a yaml file
+            expected_filename = key + self.extension
+            if key in self.assets:
+                available_assets.append(self.deyamlify(os.path.join(self.assets, key)))
+            if expected_filename in self.asset_names:
+                available_assets.append(expected_filename)
+            else:
+                available_assets.append(None)
+
+        return available_assets
+
+    def deyamlify(self, file_path):
+        with open(file_path, 'r') as file:
+            instructions = yaml.load(file)
+        # to do: implement filters etc. here
+        return instructions
 
 
     def get_overlay_metadata(self, overlay_image):
@@ -69,24 +122,46 @@ class Drawerer:
 
         return parsed_overlay
 
+    def overlay_to_list(self, overlay):
+        o_list = []
+        rgb_channels = overlay.keys()
+
+        for i in range(1, len(self.channels)+1):
+            rgb_code = self.channel_to_rgb[i]
+            if rgb_code in rgb_channels:
+                o_list.append(overlay[rgb_code])
+
+        return o_list
+
+
     def recreate_cache(self):
         Canvasses = {}
 
-        overlays = os.listdir("pictures/tiles/overlay")
-        statics = os.listdir("pictures/tiles/static")
+        overlays_names = os.listdir(self.overlays)
+        static_names = os.listdir(self.static)
 
-        for filename in os.listdir("pictures/tiles/background"):
+        for filename in os.listdir(self.backgrounds):
 
-            overlay_file = filename if filename in overlays else "default_overlay.png"
-            overlay = self.get_overlay_metadata(os.path.join("pictures/tiles/overlay", overlay_file))
+            overlay_file = filename if filename in overlays_names else self.default_overlay
+            overlay = self.get_overlay_metadata(os.path.join(self.overlays, overlay_file))
 
-            static = os.path.join("pictures/tiles/static", filename) if filename in statics else None
+            static = os.path.join(self.static, filename) if filename in static_names else None
 
-            canvas_id = int(filename.replace(".png", ""))
+            canvas_id = int(filename.replace(self.extension, ""))
 
             Canvasses[canvas_id] = Canvas(canvas_id, filename, overlay, static)
 
         return Canvasses
+
+    # filepaths
+    extension = ".png"
+    overlay_ext = ".o.png"
+    backgrounds = "pictures/tiles/background"
+    overlays = "pictures/tiles/overlay"
+    default_overlay = "default_overlay.png"
+    static = "pictures/tiles/static"
+    skeletons = "pictures/skeletons"
+    assets = "pictures/assets"
 
     # overlay colours
     ch1 = (255, 0, 0) #red
