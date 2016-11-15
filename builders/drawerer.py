@@ -1,18 +1,18 @@
 from configparser import ConfigParser
 from collections import Counter
 import random
-import json
 import os
 import yaml
-import math
 from Manifest import *
-import subprocess
 from contextlib import contextmanager
+from builders.CustomFilters import CustomFilters
 from PIL import Image, ImageFilter
 
 class Drawerer:
 
     def __init__(self, canvas_cache):
+        self.canvas_height = 0
+        self.canvas_width = 0
         if canvas_cache is None:
             self.canvas_cache = self.recreate_cache()
         else:
@@ -21,14 +21,14 @@ class Drawerer:
         self.skeleton_names = os.listdir(self.skeletons)
 
     def combine(self, outcomes):
-        combined = Image.new('RGBA', (100, len(outcomes)*100), color=50)
+        combined = Image.new('RGBA', (self.canvas_width, len(outcomes)*self.canvas_height), color=50)
 
         position = 0
 
         for outcome in outcomes:
             piece = self.assemble_canvas(outcome)
             combined.paste(piece, (0, position))
-            position += 100
+            position += self.canvas_height
 
         return combined
 
@@ -63,16 +63,25 @@ class Drawerer:
                 skeleton_overlay.append((random.randrange(0, skeleton_base.size[0]),
                                         random.randrange(0, skeleton_base.size[1])))
 
+        filters = []
+
         for i in range(0, len(assets)):
             if type(assets[i]) is str: # then it's the file path of an asset
                 asset_img = Image.open(os.path.join(self.assets, assets[i]))
                 # [0] is for the first coords tuple in the channel
                 # we probably want only one set of coordinates for each channel in skeleton overlays, tbc)
                 skeleton_base.paste(asset_img, skeleton_overlay[i][0])
-            # to do: elif type(asset) is Filter: ...
+            elif type(assets[i]) is list:
+                filters = filters + assets[i]
             # and if it's not one of the above, don't do anything - the skeleton base stays as is
 
+        if len(filters):
+            modifications = CustomFilters(filters, skeleton_base)
+            skeleton_base = modifications.apply_all()
+
         return skeleton_base
+
+
 
     def get_skeleton(self, type_path):
         type_lookup = list(reversed(type_path))
@@ -88,7 +97,7 @@ class Drawerer:
         for key in keys:
             # could be either a png, or a yaml file
             expected_filename = key + self.extension
-            if key in self.assets:
+            if key in self.asset_names:
                 available_assets.append(self.deyamlify(os.path.join(self.assets, key)))
             if expected_filename in self.asset_names:
                 available_assets.append(expected_filename)
@@ -100,7 +109,8 @@ class Drawerer:
     def deyamlify(self, file_path):
         with open(file_path, 'r') as file:
             instructions = yaml.load(file)
-        # to do: implement filters etc. here
+            # for now, the only allowed thing here is a list of filters from CustomFilters (the yaml file tells us which)
+            # can be expanded with more custom stuff (e.g. load new instructions through yaml)
         return instructions
 
 
@@ -139,8 +149,14 @@ class Drawerer:
 
         overlays_names = os.listdir(self.overlays)
         static_names = os.listdir(self.static)
+        background_names = os.listdir(self.backgrounds)
 
-        for filename in os.listdir(self.backgrounds):
+        sample = Image.open(os.path.join(self.backgrounds, background_names[0]))
+
+        self.canvas_height = sample.size[1]
+        self.canvas_width = sample.size[0]
+
+        for filename in background_names:
 
             overlay_file = filename if filename in overlays_names else self.default_overlay
             overlay = self.get_overlay_metadata(os.path.join(self.overlays, overlay_file))
@@ -150,6 +166,9 @@ class Drawerer:
             canvas_id = int(filename.replace(self.extension, ""))
 
             Canvasses[canvas_id] = Canvas(canvas_id, filename, overlay, static)
+
+        if not self.canvas_height or not self.canvas_width:
+            raise ValueError("The reference sample for canvas has a weird size, check {0}".format(background_names[0]))
 
         return Canvasses
 

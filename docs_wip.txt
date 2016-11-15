@@ -69,6 +69,14 @@ Replacements syntax:
     To specify a subset (e.g. male, female), use the $ tag followed by the subset index: "i want an @items,~$0#2,5@"
     For any of the above: do not include spaces.
 
+Passing replacements around:
+    The above rules apply, except and id has to be supplied, surrounded by the symbol '£', e.g.:
+        "i want an @£id44£items,type_a#2,5@"
+    To re-use elements from the cache, use a single '%' and the id:
+        "i want that @%id44@ again"
+    If the '%' symbol is used, then only the id can be specified - the rest of the metadata is loaded from the cache
+     and cannot be changed (we'll want to allow some modifications, but it's not a feature yet)
+
 
 Image generation
     Overlays

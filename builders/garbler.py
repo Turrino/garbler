@@ -20,6 +20,7 @@ class Garbler:
         # temporary, until the matrix has appropriate logic/storage (needs to be ignored or it confuses the mapper because it has the same keys as the items)
         self.map_ignore = ["item_attributes_matrix"]
         self.map_crumblist(self.crumbs)
+        self.story_cache = {}
 
 
     def any_of_many(self, elements, discard_item=True):
@@ -51,27 +52,44 @@ class Garbler:
         for sub in subs:
             replacement = sub[0][1:-1]
 
-            subset = replacement.find('$')
-            if subset > -1:
-                splat = replacement.split('$')
-                replacement = splat[0] + splat[1][1:] # take the $ tag and subset out, put the rest back
-                subset = int(splat[1][:1])
-
-            overlay_pos = []
-            display_data = True if replacement.find('#') > -1 else False
-            if display_data: #trim+save the overlay data and leave the clean replacement
-                splat = replacement.split('#')
-                overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
-                overlay_pos = [int(x) for x in overlay_pos]
-                replacement = splat[0].split(',')
+            if replacement[0] == '%':
+                stored_info = self.story_cache[replacement[1:]]
+                repl_as_text = ' '.join(stored_info["keys"])
+                metadata[repl_as_text] = stored_info
             else:
-                replacement = replacement.split(',')
+                # mark the elements that we have to cache
+                must_remember = replacement[0] == '£'
+                repl_id = ""
+                if must_remember:
+                    id_and_repl = replacement.split('£')
+                    id_and_repl.remove("")
+                    repl_id = id_and_repl[0]
+                    replacement = id_and_repl[1]
 
-            parsed_repl = self.get_element(replacement, subset)
-            replacements.append(parsed_repl[0][0])
+                subset = replacement.find('$')
+                if subset > -1:
+                    splat = replacement.split('$')
+                    replacement = splat[0] + splat[1][1:] # take the $ tag and subset out, put the rest back
+                    subset = int(splat[1][:1])
 
-            metadata[parsed_repl[0][0]] = { "keys": parsed_repl[0][1], "display": display_data,
-                                         "type_path": parsed_repl[1], "position": overlay_pos }
+                overlay_pos = []
+                display_data = True if replacement.find('#') > -1 else False
+                if display_data: #trim+save the overlay data and leave the clean replacement
+                    splat = replacement.split('#')
+                    overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
+                    overlay_pos = [int(x) for x in overlay_pos]
+                    replacement = splat[0].split(',')
+                else:
+                    replacement = replacement.split(',')
+
+                parsed_repl = self.get_element(replacement, subset)
+                repl_as_text = parsed_repl[0][0]
+                metadata[repl_as_text] = { "keys": parsed_repl[0][1], "display": display_data,
+                                                "type_path": parsed_repl[1], "position": overlay_pos }
+                if must_remember:
+                    self.story_cache[repl_id] = metadata[parsed_repl[0][0]]
+
+            replacements.append(repl_as_text)
 
         filled_in_text = ""
 
@@ -135,26 +153,23 @@ class Garbler:
                 sub_path.append(element)
                 self.map_crumblist(current_level[element], sub_path)
 
-    #finds a crumblist using the map
-    def find_crs(self, crumblist):
+    #finds a crumblist using the map (returns [0]: crumblist, [1]: crumbs path)
+    def find_crumbs(self, crumblist):
         full_path = self.crumb_map[crumblist]
         result = None
         for x in full_path:
             result = self.crumbs[x]
-        return result[crumblist]
+        return result[crumblist], full_path
 
     # accepts a list of strings that indicate the crumbs path to the desired element
     # returns a tuple with: [0][0] actual text, [0][1] metadata lookup keys,
     # [1] actual path (will differ from category_path if ~ was used)
     def get_element(self, path, subset: -1):
-
         crumbs_to_use = self.crumbs
         actual_path = []
         if len(path) == 1 and path[0] not in crumbs_to_use.keys():
-            actual_path = "" #self.find_crumblist(path[0])
-            for element in actual_path:
-                crumbs_to_use = crumbs_to_use[element]
-            return self.writerer(crumbs_to_use, subset, True), actual_path
+            crumbs_to_use = self.find_crumbs(path[0])
+            return self.writerer(crumbs_to_use[0], subset, True), crumbs_to_use[1]
         else:
             for element in path:
                 if element == '~':
@@ -168,14 +183,15 @@ class Garbler:
         return self.writerer(crumbs_to_use, subset, True), actual_path
 
     def create_item(self, item_drop):
-        name = self.writerer(self.find_crs(item_drop[0]), None, True)
+        name = self.writerer(self.find_crumbs(item_drop[0])[0], None, True)
         tier = random.randrange(1, item_drop[1]+1)
 
         points = tier*2
         minimum_allocation = math.floor(points/10) if points/10>1 else 1
         durability = random.randrange(minimum_allocation, points-minimum_allocation+1)
         modpoints = points - durability
-        # pick modifiers that are consistent with that item type; make a copy of the list so that we're not removing things permanently
+        # pick modifiers that are consistent with that item type
+        # make a copy of the list so that we're not removing things permanently
         attributes_list = list(self.crumbs["item_attributes_matrix"][item_drop[0]])
         chosen_attributes = []
 
