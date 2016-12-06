@@ -19,6 +19,7 @@ class Drawerer:
             self.canvas_cache = canvas_cache
         self.asset_names = os.listdir(self.assets)
         self.skeleton_names = os.listdir(self.skeletons)
+        self.elements_cache = {}
 
     def combine(self, outcomes):
         combined = Image.new('RGBA', (self.canvas_width, len(outcomes)*self.canvas_height), color=50)
@@ -38,17 +39,32 @@ class Drawerer:
         img = Image.open(os.path.join('pictures/tiles/background', canvas.background))
         if outcome.ld_sparkle:
             img.paste(Image.open('pictures/ldstar.png'), (90, 1))
-        for item in outcome.metadata:
+        for key, item in outcome.meta.items():
             if item["display"]:
+
+                if item["cache_id"] is not None:
+                    if item["cache_id"] in self.elements_cache:
+                        return self.elements_cache["cache_id"]
+
                 item_img = self.transmogrify(item["type_path"], item["keys"])
-                coords = canvas.overlay[self.channel_to_rgb[item["position"][0]]][item["position"][1]]
+                sequence = item["position"][1] if len(item["position"]) == 2 else 0
+                coords = canvas.overlay[self.channel_to_rgb[item["position"][0]]][sequence]
                 img.paste(item_img, coords)
+
+                if item["cache_id"] is not None:
+                    self.elements_cache["cache_id"] = img
         return img
 
     # ask for a type to be created, and the drawerer shall return a picture based on the info provided
     def transmogrify(self, type_path, keys):
         skeleton = self.get_skeleton(type_path)
         assets = self.get_assets(keys)
+
+        #temp workraound
+        if skeleton is None:
+            skeleton = "sample"
+        if None in assets:
+            assets = [ "sample.png" ]
 
         skeleton_base = Image.open(os.path.join(self.skeletons, skeleton + self.extension))
         skeleton_overlay = self.overlay_to_list(self.get_overlay_metadata(
