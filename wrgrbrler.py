@@ -10,16 +10,19 @@ import math
 from Manifest import *
 from PIL import Image, ImageFilter
 
-def main():
 
+def main():
     with open("config_v2", 'r') as yaml_config:
         configs = yaml.load(yaml_config)
 
-    peep_config = configs["peep"]
-    garbler_config = configs["garbler"]
-
     with open("crumbs_v2", 'r') as yaml_crumbs:
         crumbs = yaml.load(yaml_crumbs)
+
+    with open("thesaurus", 'r') as yaml_thesaurus:
+        thesaurus_vocabulary = yaml.load(yaml_thesaurus)
+
+    peep_config = configs["peep"]
+    garbler_config = configs["garbler"]
 
     crumbs['event_patterns'] = []
 
@@ -38,7 +41,8 @@ def main():
 
     places = []
 
-    garbler = Garbler(crumbs, peep, garbler_config)
+    garbler = Garbler(crumbs, thesaurus_vocabulary["thesaurus"],
+                      thesaurus_vocabulary["vocabulary"], peep, garbler_config)
 
     for x in range(0, events_count):
         places.append(garbler.get_place())

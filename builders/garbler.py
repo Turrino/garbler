@@ -6,8 +6,10 @@ from Manifest import *
 
 
 class Garbler:
-    def __init__(self, parsed_crumbs, peep, config):
+    def __init__(self, parsed_crumbs, parsed_thesaurus, parsed_vocabulary, peep, config):
         self.crumbs = parsed_crumbs
+        self.thesaurus = parsed_thesaurus
+        self.vocabulary = parsed_vocabulary
         self.peep = peep
         self.config = config
         self.ld_spend = config.ld_spend
@@ -17,9 +19,11 @@ class Garbler:
         # how many event-level patterns can we choose from
         self.event_pattern_range = len(self.crumbs['event_patterns'])
         self.crumb_map = {}
-        # temporary, until the matrix has appropriate logic/storage (needs to be ignored or it confuses the mapper because it has the same keys as the items)
-        self.map_ignore = ["item_attributes_matrix"]
-        self.map_crumblist(self.crumbs)
+        self.thesaurus_map = {}
+        # ignore the matrix until it has appropriate logic/storage
+        # (it confuses the mapper because it has the same keys as the items)
+        self.path_mapper(self.crumb_map, ["item_attributes_matrix"], self.crumbs)
+        self.path_mapper(self.thesaurus_map, [], self.thesaurus)
         self.story_cache = {}
 
 
@@ -59,7 +63,7 @@ class Garbler:
             else:
                 # mark the elements that we have to cache
                 must_remember = replacement[0] == '£'
-                repl_id = ""
+                repl_id = None
                 if must_remember:
                     id_and_repl = replacement.split('£')
                     id_and_repl.remove("")
@@ -84,8 +88,9 @@ class Garbler:
 
                 parsed_repl = self.get_element(replacement, subset)
                 repl_as_text = parsed_repl[0][0]
-                metadata[repl_as_text] = { "keys": parsed_repl[0][1], "display": display_data,
-                                                "type_path": parsed_repl[1], "position": overlay_pos }
+                metadata[repl_as_text] = {"keys": parsed_repl[0][1], "display": display_data,
+                                          "type_path": parsed_repl[1], "position": overlay_pos,
+                                          "cache_id": repl_id}
                 if must_remember:
                     self.story_cache[repl_id] = metadata[parsed_repl[0][0]]
 
@@ -100,8 +105,33 @@ class Garbler:
 
         return filled_in_text+trail, metadata
 
+
+    def instructions_to_crumblist(self, crumb_info):
+        # if not a string, it's an explicit instruction
+        if type(crumb_info) is not str:
+            return crumb_info
+
+        # if it's not explicit, we need to find the pieces
+        crumblist = []
+        parsed_info = crumb_info.split(' ')
+        for element in parsed_info:
+            matching_entry = self.find_crumbs(element, self.thesaurus)[0]
+
+            # instructions may contain specific crumblists, or a super-type with multiple categories
+            # if it is a super-type, then traverse it until we find something we can use
+            while type(matching_entry) is dict:
+                matching_entry = matching_entry[random.choice(list(matching_entry.keys()))]
+
+            entry_name = self.any_of_many(matching_entry, False)
+            crumblist.append(self.vocabulary[entry_name])
+
+        return crumblist
+
     #use get_meta to return both the string and the metadata
-    def writerer(self, crumblist, subset=None, get_meta=False):
+    def writerer(self, crumb_info, subset=None, get_meta=False):
+
+        crumblist = self.instructions_to_crumblist(crumb_info)
+
         fetch_crumb = self.any_of_many
 
         # We use this only if a subset parameter (mood, gender...) is passed in, in order to access the sub-features
@@ -126,7 +156,6 @@ class Garbler:
         else:
             return wroted[1:]
 
-
     def get_peep(self, name, attrib, gender=None):
         if gender is None:
             gender = random.randrange(0, 2)
@@ -138,28 +167,36 @@ class Garbler:
     def get_place(self, gender=None):
         return Place(self.writerer(self.crumbs['locations']))
 
-    #populates the crumb_map so that crumblists can be accessed without needing to know the explicit path
-    def map_crumblist(self, current_level, c_path = None):
+    # populates the specified map so that crumblists, thesaurus etc
+    # can be accessed without needing to know the explicit path to nested objects
+    def path_mapper(self, map_to, map_ignore, current_level, c_path = None):
         if c_path is None:
             c_path = []
 
         for element in current_level:
-            if (element) in self.map_ignore:
+            if element in map_ignore:
                 continue
-            if type(current_level[element]) is list:
-                self.crumb_map[element] = c_path
+            map_to[element] = c_path
+            if type(current_level[element]) in [list, str]:
+                continue
             else:
+                map_to[element] = c_path
                 sub_path = c_path[:]
                 sub_path.append(element)
-                self.map_crumblist(current_level[element], sub_path)
+                self.path_mapper(map_to, map_ignore, current_level[element], sub_path)
 
     #finds a crumblist using the map (returns [0]: crumblist, [1]: crumbs path)
-    def find_crumbs(self, crumblist):
-        full_path = self.crumb_map[crumblist]
-        result = None
-        for x in full_path:
-            result = self.crumbs[x]
-        return result[crumblist], full_path
+    def find_crumbs(self, crumblist_name, look_into):
+        target_map = self.crumb_map if look_into == self.crumbs else self.thesaurus_map
+        target = self.crumbs if look_into == self.crumbs else self.thesaurus
+
+        full_path = target_map[crumblist_name]
+        if len(full_path) == 0:
+            return target[crumblist_name], full_path
+
+        for path_level in full_path:
+            target = target[path_level]
+        return target[crumblist_name], full_path
 
     # accepts a list of strings that indicate the crumbs path to the desired element
     # returns a tuple with: [0][0] actual text, [0][1] metadata lookup keys,
@@ -168,7 +205,7 @@ class Garbler:
         crumbs_to_use = self.crumbs
         actual_path = []
         if len(path) == 1 and path[0] not in crumbs_to_use.keys():
-            crumbs_to_use = self.find_crumbs(path[0])
+            crumbs_to_use = self.find_crumbs(path[0], self.crumbs)
             return self.writerer(crumbs_to_use[0], subset, True), crumbs_to_use[1]
         else:
             for element in path:
@@ -183,7 +220,7 @@ class Garbler:
         return self.writerer(crumbs_to_use, subset, True), actual_path
 
     def create_item(self, item_drop):
-        name = self.writerer(self.find_crumbs(item_drop[0])[0], None, True)
+        name = self.writerer(self.find_crumbs(item_drop[0], self.crumbs)[0], None, True)
         tier = random.randrange(1, item_drop[1]+1)
 
         points = tier*2

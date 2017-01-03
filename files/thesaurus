@@ -1,0 +1,15 @@
+{
+  thesaurus: {
+    adjective: [ sample_adj1, sample_adj2 ],
+    identity: { role: [ role ], race: [ human, non-human ] },
+    tail_descriptor: [ tail_descriptor_mix ]
+  },
+  vocabulary: {
+    sample_adj1: [ Grand, Fancy ],
+    sample_adj2: [ Stupid, Funny ],
+    role: [ Idiot, Knight, King, Servant ],
+    human: [ Human, Half-Human, Large Human ],
+    non-human: [ Mummy, Frog, Talking Tree, Bird ],
+    tail_descriptor_mix: [ of doom, of death, on fire, without legs, with problems, in crippling debt ],
+  }
+}

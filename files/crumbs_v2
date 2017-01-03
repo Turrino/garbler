@@ -1,10 +1,10 @@
 {
   #This is all placeholdery stuff
-
-    characters:
-        [[[Ex-girlfriend, Ex-boyfriend], Vegan, Smelly, Selfie-Addict, Feral],
-        [Shoe-maker, [Segway-Creaturess, Segway-Creature], Solicitor, [Ballerina, Ballerino], Ghost],
-        [of the Bearded Armpit, of the Shining Eyebrow, of the Cheeky Cheese, Master of unemployment, of Aggravated Pasta-Stealing, with Splendid Neck-Gills]],
+   sample_instructions: adjective identity tail_descriptor,
+   characters:
+       [[[Ex-girlfriend, Ex-boyfriend], Vegan, Smelly, Selfie-Addict, Feral],
+       [Shoe-maker, [Segway-Creaturess, Segway-Creature], Solicitor, [Ballerina, Ballerino], Ghost],
+       [of the Bearded Armpit, of the Shining Eyebrow, of the Cheeky Cheese, Master of unemployment, of Aggravated Pasta-Stealing, with Splendid Neck-Gills]],
 
    creatures:
         [[[Ex-girlfriend, Ex-boyfriend], Vegan, Smelly, Selfie-Addict, Feral],
@@ -20,7 +20,7 @@
 
    items:
         {type_a:
-            [[illustrious, boring, legendary,fetid, craft],
+            [[illustrious, boring, legendary, fetid, craft],
             [talisman, saber-tooth, cookie-dough, halberd, cup-holder, asbestos stove],
             [of dust-sweeping, of doom, of flames, limited edition, holster, toy, in the shape of a rabbit]],
         type_b:
