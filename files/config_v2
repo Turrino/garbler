@@ -1,12 +1,9 @@
-peep: !!python/object:Manifest.ConfigObj {
+peep: {
     name: yalla,
-    attribs: [
-      !!python/object:Manifest.Attribute {id: testvalue1, level: 0},
-      !!python/object:Manifest.Attribute {id: testvalue2, level: 0},
-      !!python/object:Manifest.Attribute {id: testvalue3, level: 2} ],
+    attribs: [ {id: testvalue_x, level: 5}, {id: testvalue_y, level: 2} ],
     gender: 0,
 }
-garbler: !!python/object:Manifest.ConfigObj {
+garbler: {
     template: simple,
     #multiplier, 1 = has no effect, >1 increases randomness, <1 makes other modifiers more relevant
     random_mod: 1,

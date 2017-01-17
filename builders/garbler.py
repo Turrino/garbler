@@ -6,24 +6,16 @@ from Manifest import *
 
 
 class Garbler:
-    def __init__(self, parsed_crumbs, parsed_thesaurus, parsed_vocabulary, peep, config):
+    def __init__(self, parsed_crumbs, peep, config):
         self.crumbs = parsed_crumbs
-        self.thesaurus = parsed_thesaurus
-        self.vocabulary = parsed_vocabulary
         self.peep = peep
         self.config = config
-        self.ld_spend = config.ld_spend
-        self.ld_activation = config.starting_ld*config.ld_activator
-        peep.desc = self.writerer(self.crumbs['characters'], peep.gender)
-        self.random_mod = config.random_mod
-        # how many event-level patterns can we choose from
-        self.event_pattern_range = len(self.crumbs['event_patterns'])
-        self.crumb_map = {}
-        self.thesaurus_map = {}
-        # ignore the matrix until it has appropriate logic/storage
-        # (it confuses the mapper because it has the same keys as the items)
-        self.path_mapper(self.crumb_map, ["item_attributes_matrix"], self.crumbs)
-        self.path_mapper(self.thesaurus_map, [], self.thesaurus)
+
+        # todo remove this one it's coming from the proper source and not the config
+        self.ld_spend = config["ld_spend"]
+        self.ld_activation = config["starting_ld"]*config["ld_activator"]
+        self.random_mod = config["random_mod"]
+
         self.story_cache = {}
 
 
@@ -34,10 +26,12 @@ class Garbler:
             elements.remove(item)
         return item
 
-
     def stuff_the_blanks(self, parameters_text):
         #test, remove
-        #parameters_text = 'bla @items,type_a#1,2@ and @items,~#4@ and blah and this one @creatures$0@'
+        parameters_text = 'bla @£speshul£items,type_a#1,1@ and @items,~#1@ and blah and this one @creatures$0@'
+        if len(self.story_cache):
+            parameters_text = 'bla @%speshul@'
+        # parameters_text = 'bla @items,type_a#1,2@ and @items,~#4@ and blah and this one @creatures$0@'
 
         positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
         if len(positions) % 2 != 0:
@@ -115,7 +109,7 @@ class Garbler:
         crumblist = []
         parsed_info = crumb_info.split(' ')
         for element in parsed_info:
-            matching_entry = self.find_crumbs(element, self.thesaurus)[0]
+            matching_entry = self.crumbs.find_crumbs(element)[0]
 
             # instructions may contain specific crumblists, or a super-type with multiple categories
             # if it is a super-type, then traverse it until we find something we can use
@@ -123,7 +117,7 @@ class Garbler:
                 matching_entry = matching_entry[random.choice(list(matching_entry.keys()))]
 
             entry_name = self.any_of_many(matching_entry, False)
-            crumblist.append(self.vocabulary[entry_name])
+            crumblist.append(self.crumbs.vocabulary[entry_name])
 
         return crumblist
 
@@ -164,39 +158,6 @@ class Garbler:
         peep.desc = self.writerer(self.crumbs['characters'], gender)
         return peep
 
-    def get_place(self, gender=None):
-        return Place(self.writerer(self.crumbs['locations']))
-
-    # populates the specified map so that crumblists, thesaurus etc
-    # can be accessed without needing to know the explicit path to nested objects
-    def path_mapper(self, map_to, map_ignore, current_level, c_path = None):
-        if c_path is None:
-            c_path = []
-
-        for element in current_level:
-            if element in map_ignore:
-                continue
-            map_to[element] = c_path
-            if type(current_level[element]) in [list, str]:
-                continue
-            else:
-                map_to[element] = c_path
-                sub_path = c_path[:]
-                sub_path.append(element)
-                self.path_mapper(map_to, map_ignore, current_level[element], sub_path)
-
-    #finds a crumblist using the map (returns [0]: crumblist, [1]: crumbs path)
-    def find_crumbs(self, crumblist_name, look_into):
-        target_map = self.crumb_map if look_into == self.crumbs else self.thesaurus_map
-        target = self.crumbs if look_into == self.crumbs else self.thesaurus
-
-        full_path = target_map[crumblist_name]
-        if len(full_path) == 0:
-            return target[crumblist_name], full_path
-
-        for path_level in full_path:
-            target = target[path_level]
-        return target[crumblist_name], full_path
 
     # accepts a list of strings that indicate the crumbs path to the desired element
     # returns a tuple with: [0][0] actual text, [0][1] metadata lookup keys,
@@ -205,7 +166,7 @@ class Garbler:
         crumbs_to_use = self.crumbs
         actual_path = []
         if len(path) == 1 and path[0] not in crumbs_to_use.keys():
-            crumbs_to_use = self.find_crumbs(path[0], self.crumbs)
+            crumbs_to_use = self.crumbs.find_instructions(path[0])
             return self.writerer(crumbs_to_use[0], subset, True), crumbs_to_use[1]
         else:
             for element in path:
@@ -220,7 +181,7 @@ class Garbler:
         return self.writerer(crumbs_to_use, subset, True), actual_path
 
     def create_item(self, item_drop):
-        name = self.writerer(self.find_crumbs(item_drop[0], self.crumbs)[0], None, True)
+        name = self.writerer(self.crumbs.find_instructions(item_drop[0])[0], None, True)
         tier = random.randrange(1, item_drop[1]+1)
 
         points = tier*2
@@ -398,16 +359,26 @@ class Garbler:
 
         return results
 
-
     def can_we_has_ld(self, segment_allocation, depth):
         return (segment_allocation > self.ld_activation/depth * (random.randrange(0,20)/ 10))
 
-
     def get_event(self, event_attributes):
-        # see event_patterns desc in docs
-        event_data = self.any_of_many(self.crumbs["event_patterns"])
+        # todo rewrite docs for this
+        intro = self.any_of_many(self.crumbs["event_blocks"][self.config.entry_point])
 
-        event = Event(event_attributes, self.build_event_pattern(event_data["blocks"]))
+        event = Event(self, intro)
+
+        self.calculate_block_path(event)
+
+
+        #while(self.is_terminal(current_block)):
+
+
+        next_block_types = self.config.block_definitions[entry_block["type"]]["out"]
+
+        #todo refactor calculate fork outcome here
+
+        event = Event(event_attributes, self.build_event_pattern(event_data))
 
         event_text = ""
 
@@ -424,6 +395,11 @@ class Garbler:
         return event
 
 
+
+    def is_terminal(self, block):
+        return block.Keys()
+
+    # TODO event_patterns is no longer in use, find all instances and replace them with the new event blocks
     def build_event_pattern(self, blocklist):
         parsed_blocks = []
 

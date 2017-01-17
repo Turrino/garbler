@@ -1,0 +1,12 @@
+{
+  name: end_good1,
+  type: end_good,
+  canvas_id: 7,
+  branches:
+  [
+    {
+      id: 1,
+      situation: "text here... blah blah, saihdsadas"
+    }
+  ]
+}

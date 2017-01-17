@@ -17,6 +17,11 @@ Breadcrumbs
             Outcomes: has a text skeleton that goes to compose the overall event; also defines if there are drops or not
                 Drops: defines if an outcome drops lucky dust or not, and any item drops (as well as any other special drop)
 
+Events v2:
+    Events marked with type "intro" can be used as starting point. This needs to be specified in block_type_definitions
+    Inside events, the single items in the branches can have any ids, as long as the pointers are correct.
+    The first item at the top of the branches list will be the one used to start off the event.
+    The other nodes can be in any order.
 
 Metadata lookup (meta_lookup):
     A dictionary that stores metadata for different kind of objects (both categories and crumblists). The name of the object is the key.

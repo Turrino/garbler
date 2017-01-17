@@ -1,0 +1,5 @@
+{
+  mod1 : testvalue_x >= 2,
+  mod2 : testvalue_x <= 2,
+  lucky33 : random 33,
+}

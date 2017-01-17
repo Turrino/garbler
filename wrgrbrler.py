@@ -1,57 +1,57 @@
-from configparser import ConfigParser
-from collections import Counter
-import random
-import json
 import os
 import yaml
+from builders.ForkParser import ForkParser
+from builders.ModParser import ModParser
 from builders.drawerer import Drawerer
 from builders.garbler import Garbler
-import math
 from Manifest import *
-from PIL import Image, ImageFilter
+
+
+def yaml_loader(path):
+    joined_path = ""
+    for name in path:
+        joined_path = os.path.join(joined_path, name)
+    with open(joined_path, 'r') as yaml_file:
+        return yaml.load(yaml_file)
 
 
 def main():
-    with open("config_v2", 'r') as yaml_config:
-        configs = yaml.load(yaml_config)
+    config = yaml_loader(["config_v2"])
 
-    with open("crumbs_v2", 'r') as yaml_crumbs:
-        crumbs = yaml.load(yaml_crumbs)
+    instructions = yaml_loader(["crumbs_v2"])
+    thesaurus_vocabulary = yaml_loader(["thesaurus"])
+    block_type_definitions = yaml_loader(["events", "block_type_definitions"])
+    story_fundamentals = yaml_loader(["events", "story_fundamentals"])
+    drops = yaml_loader(["events", "presets", "drops"])
+    mods = ModParser.parse_all(yaml_loader(["events", "presets", "mods"]))
+    attributes = yaml_loader(["events", "presets", "item_attributes"])
 
-    with open("thesaurus", 'r') as yaml_thesaurus:
-        thesaurus_vocabulary = yaml.load(yaml_thesaurus)
+    blocks_dict = {}
 
-    peep_config = configs["peep"]
-    garbler_config = configs["garbler"]
+    entry_point = block_type_definitions["entry_point"]
+    block_type_definitions = block_type_definitions["definitions"]
 
-    crumbs['event_patterns'] = []
+    for definition in block_type_definitions:
+        blocks_dict[definition["type"]] = []
 
-    for filename in os.listdir("events"):
-        with open(os.path.join("events", filename), 'r') as event:
-            crumbs['event_patterns'].append(yaml.load(event))
+    for filename in os.listdir(os.path.join("events", "blocks")):
+        with open(os.path.join("events", "blocks", filename), 'r') as yaml_block:
+            block = ForkParser.parse(yaml.load(yaml_block), mods)
+            blocks_dict[block["type"]].append(block)
 
-    template_name = garbler_config.template
-    template = crumbs['templates'][template_name]
-    # Assuming one event needs only place only - can change later
-    events_count = len(template['events'])
+    crumbs = Crumbs(instructions, thesaurus_vocabulary["thesaurus"], thesaurus_vocabulary["vocabulary"],
+                    block_type_definitions, blocks_dict, story_fundamentals, drops, mods, attributes, entry_point)
 
-    #remove once we have data coming from the proper source
-    peep = Peep(peep_config.name, peep_config.attribs, peep_config.gender)
-    peep.ld = garbler_config.starting_ld-garbler_config.ld_spend
+    peep_config = config["peep"]
+    garbler_config = config["garbler"]
 
-    places = []
+    #todo remove once we have data coming from the proper source
+    peep = Peep(peep_config["name"], peep_config["attribs"], peep_config["gender"])
+    peep.ld = garbler_config["starting_ld"]-garbler_config["ld_spend"]
 
-    garbler = Garbler(crumbs, thesaurus_vocabulary["thesaurus"],
-                      thesaurus_vocabulary["vocabulary"], peep, garbler_config)
+    garbler = Garbler(crumbs, peep, garbler_config)
 
-    for x in range(0, events_count):
-        places.append(garbler.get_place())
-        # put back once we have enough crumbs not to crash
-        # get event of the type needed at this index by the template
-        # events.append(garbler.get_event(template['events'][x]))
-
-    ##remove later
-    event = garbler.get_event(template['events'][1])
+    event = garbler.get_event()
 
     drawerer = Drawerer(None)
 
@@ -63,8 +63,6 @@ def main():
         print("looks like there's some ld left.. ld: {0}".format(garbler.ld_spend))
 
     manifest = Manifest(peep, places, [event])
-
-
 
     print('{0}, the {1}, went to a {2}, had lunch at a {3}, ended up in a {4}'
           .format(peep.name, peep.desc, places[0].name, places[1].name, places[2].name))

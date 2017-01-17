@@ -1,0 +1,5 @@
+{
+  drop1 : {items: [[type_a, 5, 50], [type_c, 1, 100]], ld: 10},
+  drop2 : {items: [[type_b, 5, 50], [type_b, 1, 100]], ld: -10},
+  drop3 : {items: [[type_c, 5, 50], [type_a, 1, 100]], ld: 100}
+}

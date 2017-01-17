@@ -1,0 +1,44 @@
+# any block without an in attribute can be used as a starting point
+# any block without an "out" attribute is an ending point
+{
+  entry_point: intro,
+  definitions:
+  [
+      {
+        type: intro,
+        out_args: [ trouble ],
+        out: [ quest_discovery ],
+      },
+      {
+        type: quest_discovery,
+        in: [ intro ],
+        args: [ trouble ],
+        out_args: [ trouble, quest ],
+        out: [ filler ]
+      },
+      {
+        type: filler,
+        in: [ quest_discovery ],
+        args: [ trouble, quest ],
+        out_args: [ trouble, quest ],
+        out: [ resolution ]
+      },
+      {
+        type: resolution,
+        in: [ quest_discovery ],
+        args: [ trouble, quest ],
+        out_args: [ trouble, quest ],
+        out: [ end_good, end_bad ]
+      },
+      {
+        type: end_good,
+        in: [ resolution ],
+        args: [ trouble, quest ]
+      },
+      {
+        type: end_bad,
+        in: [ resolution ],
+        args: [ trouble, quest ]
+      }
+  ]
+}

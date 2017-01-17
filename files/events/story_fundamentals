@@ -1,0 +1,22 @@
+{
+  trouble:
+     {
+        calamities: {},
+        villains: {},
+        mysteries: {}
+     },
+  helper: {},
+  nemesis: {},
+  comic_relief: {},
+  quest:
+  {
+    provider: {},
+    objective:
+     {
+        target: {},
+        location: {},
+        reward: {}
+     }
+  }
+
+}

@@ -1,15 +1,21 @@
 {
   thesaurus: {
-    adjective: [ sample_adj1, sample_adj2 ],
+    adjective: [ adjective ],
     identity: { role: [ role ], race: [ human, non-human ] },
-    tail_descriptor: [ tail_descriptor_mix ]
+    tail_descriptor: [ tail ]
   },
   vocabulary: {
-    sample_adj1: [ Grand, Fancy ],
-    sample_adj2: [ Stupid, Funny ],
-    role: [ Idiot, Knight, King, Servant ],
+    adjective: [[Ex-girlfriend, Ex-boyfriend], Vegan, Smelly, Selfie-Addict, Feral, Grand, Fancy ],
+    role: [ Shoe-maker, [Segway-Creaturess, Segway-Creature], Solicitor, [Ballerina, Ballerino], Ghost, Idiot, Knight, King, Servant ],
     human: [ Human, Half-Human, Large Human ],
     non-human: [ Mummy, Frog, Talking Tree, Bird ],
-    tail_descriptor_mix: [ of doom, of death, on fire, without legs, with problems, in crippling debt ],
+    tail: [ of the Bearded Armpit, of the Shining Eyebrow, of the Cheeky Cheese, Master of unemployment, of Aggravated Pasta-Stealing, with Splendid Neck-Gills, of doom, of death, on fire, without legs, with problems, in crippling debt ],
+    item_adj: [illustrious, boring, legendary, fetid, craft, counterfeit, astounding, boring, so-so, godly, assault, surprising],
+    item_type_a: [talisman, saber-tooth, cookie-dough, halberd, cup-holder, asbestos stove],
+    item_type_b: [bath-robe, eye-patch, chain-mail, tutu, banana costume, of dust-sweeping, of doom, of flames, limited edition, holster, toy, in the shape of a rabbit],
+    item_tail: [with shiny bells, on fire, of triple-chaos, replica, studded with diamonds],
+    loc_adj: [Underground, Imaginary, Retro, Post-Apocalyptic, Smelly],
+    loc_type: [Water Cooler, Kinder-Garden, Chippy, Tea Rooms, Laundry],
+    loc_tail: [of Dooom, in Asbestos coating, with bad music, with buffet, filled with lava, owned by lizard-men],
   }
 }

@@ -1,0 +1,12 @@
+{
+  name: filler2,
+  type: filler,
+  canvas_id: 4,
+  branches:
+  [
+    {
+      id: 1,
+      situation: "text here... blah blah, saihdsadas",
+    }
+  ]
+}
