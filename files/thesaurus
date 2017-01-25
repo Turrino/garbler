@@ -1,8 +1,6 @@
 {
   thesaurus: {
-    adjective: [ adjective ],
-    identity: { role: [ role ], race: [ human, non-human ] },
-    tail_descriptor: [ tail ]
+    identity: { role: role, race: [ human, non-human ] },
   },
   vocabulary: {
     adjective: [[Ex-girlfriend, Ex-boyfriend], Vegan, Smelly, Selfie-Addict, Feral, Grand, Fancy ],

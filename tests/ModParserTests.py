@@ -5,7 +5,7 @@ from builders.ModParser import ModParser
 class ModParserTests(unittest.TestCase):
     def setUp(self):
         self.attributes = {
-            "Items": ["a", "b"],
+            "Items": {"a": [], "b": []},
             "Character": ["x", "y"]
             }
 
@@ -19,7 +19,7 @@ class ModParserTests(unittest.TestCase):
 
     def testGetHasMod(self):
         mod = ModParser.parse("has a 12", self.attributes)
-        self.assertEqual({"item_type":"a", "amount": 12}, mod.args)
+        self.assertEqual({"item_type": "a", "amount": 12}, mod.args)
         self.assertEqual(ModParser.has_item, mod.process)
 
     def testGetIsMod(self):

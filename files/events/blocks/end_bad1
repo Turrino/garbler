@@ -3,10 +3,9 @@
   type: end_bad,
   canvas_id: 6,
   branches:
-  [
-    {
-      id: 1,
+  {
+    1:{
       situation: "text here... blah blah, saihdsadas"
-    }
-  ]
+      }
+  }
 }

@@ -1,5 +1,5 @@
 {
-  mod1 : testvalue_x >= 2,
-  mod2 : testvalue_x <= 2,
+  mod1 : is testvalue_a >= 2,
+  mod2 : is testvalue_a <= 2,
   lucky33 : random 33,
 }

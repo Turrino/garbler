@@ -4,27 +4,20 @@ import random
 class ModParser:
     @staticmethod
     def parse_all(mods, attribute_dict):
-        attributes = {
-            "Items": [attribute_dict.keys()],
-            "Character":  attribute_dict["Character"]
-        }
         parsed = {}
         for key, value in mods.items():
-            parsed[key] = ModParser.parse(value, attributes)
+            parsed[key] = ModParser.parse(value.split(" "), attribute_dict)
         return parsed
 
     @staticmethod
-    def parse(text, attributes):
-
-        splat = text.split(" ")
-
+    def parse(splat, attributes):
         if splat[0] == "random":
             if len(splat) != 2:
                 raise ValueError('descriptive error here')
             mod = Mod({"percentage": int(splat[1])}, ModParser.rnd)
 
         elif splat[0] == "has":
-            if splat[1] not in attributes["Items"]:
+            if splat[1] not in attributes["Items"].keys():
                 raise ValueError('descriptive error here')
             amount = int(splat[2]) if len(splat) == 3 else 1
             args = {"item_type": splat[1], "amount": amount}
@@ -42,7 +35,7 @@ class ModParser:
         return mod
 
     @staticmethod
-    def rnd(percentage):
+    def rnd(percentage, **kwargs):
         return random.randrange(0, 100) < percentage
 
     @staticmethod

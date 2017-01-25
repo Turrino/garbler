@@ -1,4 +1,6 @@
 from collections import Counter
+from builders.Event import Event
+from utils import Utils
 import random
 import math
 import re
@@ -19,20 +21,7 @@ class Garbler:
         self.story_cache = {}
 
 
-    def any_of_many(self, elements, discard_item=True):
-        randomness = random.randrange(0, len(elements))
-        item = elements[randomness]
-        if discard_item:
-            elements.remove(item)
-        return item
-
     def stuff_the_blanks(self, parameters_text):
-        #test, remove
-        parameters_text = 'bla @£speshul£items,type_a#1,1@ and @items,~#1@ and blah and this one @creatures$0@'
-        if len(self.story_cache):
-            parameters_text = 'bla @%speshul@'
-        # parameters_text = 'bla @items,type_a#1,2@ and @items,~#4@ and blah and this one @creatures$0@'
-
         positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
         if len(positions) % 2 != 0:
             raise ValueError("tags (@) are not even in text: {0}".format(parameters_text))
@@ -76,17 +65,15 @@ class Garbler:
                     splat = replacement.split('#')
                     overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
                     overlay_pos = [int(x) for x in overlay_pos]
-                    replacement = splat[0].split(',')
-                else:
-                    replacement = replacement.split(',')
+                    replacement = splat[0]
 
                 parsed_repl = self.get_element(replacement, subset)
-                repl_as_text = parsed_repl[0][0]
-                metadata[repl_as_text] = {"keys": parsed_repl[0][1], "display": display_data,
-                                          "type_path": parsed_repl[1], "position": overlay_pos,
+                repl_as_text = parsed_repl[0]
+                metadata[repl_as_text] = {"keys": parsed_repl[1], "display": display_data,
+                                          "type": replacement, "position": overlay_pos,
                                           "cache_id": repl_id}
                 if must_remember:
-                    self.story_cache[repl_id] = metadata[parsed_repl[0][0]]
+                    self.story_cache[repl_id] = metadata[repl_as_text]
 
             replacements.append(repl_as_text)
 
@@ -100,38 +87,34 @@ class Garbler:
         return filled_in_text+trail, metadata
 
 
-    def instructions_to_crumblist(self, crumb_info):
+    def instructions_to_crumblist(self, instructions):
         # if not a string, it's an explicit instruction
-        if type(crumb_info) is not str:
-            return crumb_info
+        if type(instructions) is not str:
+            return instructions
 
         # if it's not explicit, we need to find the pieces
         crumblist = []
-        parsed_info = crumb_info.split(' ')
-        for element in parsed_info:
-            matching_entry = self.crumbs.find_crumbs(element)[0]
+        parsed_info = instructions.split(' ')
+        for entry in parsed_info:
+            if entry not in self.crumbs.vocabulary.keys():
+                # instructions may contain specific crumblists, or a super-type with multiple categories
+                # if it is a super-type, then traverse it until we find something we can use
+                entry = self.crumbs.lookup_thesaurus(entry)
+                Utils.find_specific(entry)
 
-            # instructions may contain specific crumblists, or a super-type with multiple categories
-            # if it is a super-type, then traverse it until we find something we can use
-            while type(matching_entry) is dict:
-                matching_entry = matching_entry[random.choice(list(matching_entry.keys()))]
-
-            entry_name = self.any_of_many(matching_entry, False)
-            crumblist.append(self.crumbs.vocabulary[entry_name])
+            crumblist.append(self.crumbs.vocabulary[entry])
 
         return crumblist
 
     #use get_meta to return both the string and the metadata
-    def writerer(self, crumb_info, subset=None, get_meta=False):
+    def writerer(self, crumblist, subset=None, get_meta=False):
 
-        crumblist = self.instructions_to_crumblist(crumb_info)
-
-        fetch_crumb = self.any_of_many
+        fetch_crumb = Utils.any_of_many
 
         # We use this only if a subset parameter (mood, gender...) is passed in, in order to access the sub-features
         # Then check if the selected element is a list - some elements are universal and do not have a subset
         def fetch_subset(words):
-            pick = self.any_of_many(words)
+            pick = Utils.any_of_many(words)
             return pick[subset] if type(pick) is list else pick
 
         if subset is not None:
@@ -162,23 +145,10 @@ class Garbler:
     # accepts a list of strings that indicate the crumbs path to the desired element
     # returns a tuple with: [0][0] actual text, [0][1] metadata lookup keys,
     # [1] actual path (will differ from category_path if ~ was used)
-    def get_element(self, path, subset: -1):
-        crumbs_to_use = self.crumbs
-        actual_path = []
-        if len(path) == 1 and path[0] not in crumbs_to_use.keys():
-            crumbs_to_use = self.crumbs.find_instructions(path[0])
-            return self.writerer(crumbs_to_use[0], subset, True), crumbs_to_use[1]
-        else:
-            for element in path:
-                if element == '~':
-                    while type(crumbs_to_use) is not list:
-                        pick = random.choice(list(crumbs_to_use.keys()))
-                        actual_path.append(pick)
-                        crumbs_to_use = crumbs_to_use[pick]
-                else:
-                    actual_path.append(element)
-                    crumbs_to_use = crumbs_to_use[element]
-        return self.writerer(crumbs_to_use, subset, True), actual_path
+    def get_element(self, object_name, subset=-1):
+        instructions = self.crumbs.find_instructions(object_name)
+        crumblist = self.instructions_to_crumblist(instructions)
+        return self.writerer(crumblist, subset, True)
 
     def create_item(self, item_drop):
         name = self.writerer(self.crumbs.find_instructions(item_drop[0])[0], None, True)
@@ -195,7 +165,7 @@ class Garbler:
 
         while modpoints > 0:
             if modpoints == 1:
-                chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1.1))
+                chosen_attributes.append(Attribute(Utils(attributes_list), 1.1))
                 modpoints -= 1
             else:
                 if (len(attributes_list) > 1):
@@ -207,10 +177,10 @@ class Garbler:
                 #50% chance, half the points go into one mod, 50% chance they go into two mods
                 multiple_allocation = random.randrange(0,2)
                 if multiple_allocation and len(attributes_list) > 2:
-                    chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1+allocation/20))
-                    chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1+allocation/20))
+                    chosen_attributes.append(Attribute(Utils(attributes_list), 1+allocation/20))
+                    chosen_attributes.append(Attribute(Utils(attributes_list), 1+allocation/20))
                 else:
-                    chosen_attributes.append(Attribute(self.any_of_many(attributes_list), 1 + allocation/10))
+                    chosen_attributes.append(Attribute(Utils(attributes_list), 1 + allocation/10))
 
         return Item(item_drop[0], chosen_attributes, durability, name)
 
@@ -362,37 +332,11 @@ class Garbler:
     def can_we_has_ld(self, segment_allocation, depth):
         return (segment_allocation > self.ld_activation/depth * (random.randrange(0,20)/ 10))
 
-    def get_event(self, event_attributes):
-        # todo rewrite docs for this
-        intro = self.any_of_many(self.crumbs["event_blocks"][self.config.entry_point])
-
-        event = Event(self, intro)
-
-        self.calculate_block_path(event)
-
-
-        #while(self.is_terminal(current_block)):
-
-
-        next_block_types = self.config.block_definitions[entry_block["type"]]["out"]
-
-        #todo refactor calculate fork outcome here
-
-        event = Event(event_attributes, self.build_event_pattern(event_data))
-
-        event_text = ""
-
-        outcome_list = self.generate_outcome_list(event.blocks)
-        for outcome in outcome_list:
-            #parse the @ parameters and store their metadata in the outcome
-            parsed_parameters = self.stuff_the_blanks(outcome.text)
-            outcome.meta = parsed_parameters[1]
-            event_text = "::: {0} {1} (conn: {2}) :::".format(event_text, parsed_parameters[0], outcome.connotation)
-
-        event.calculated_outcomes = outcome_list
-        event.text = event_text
-
+    def get_event(self):
+        event = Event(self.crumbs, self.crumbs.entry_point_type)
+        event.run_to_end()
         return event
+        #todo refactor calculate fork outcome here
 
 
 

@@ -1,3 +1,5 @@
+from utils import Utils
+
 class Peep:
     def __init__(self, name, attributes, gender):
         self.name = name
@@ -45,38 +47,14 @@ class Item:
             description += " {0} attr: {1}".format(attr.id, attr.level)
         return description
 
-class Event:
-    def __init__(self, intro_block):
-        self.current_block = intro_block
-        self.tracker = []
-        self.advance_one()
 
-    def add_one(self, block):
-        self.current_block = block
-
-    def advance_one(self):
-        branches = self.current_block["branches"]
-        current_node = branches[0]
-
-        # while(self.is_terminal_node(current_node))
-        #     self.
-
-        current_block = None
-
-    def is_terminal_node(self, node):
-        return "fork" in node.keys()
-
-    def calculate_fork(self, fork):
-        for option in fork:
-            option
 
 class Crumbs:
-    def __init__(self, instructions, thesaurus, vocabulary, block_type_definitions,
-                 blocks, story_fundamentals, drops, mods, attributes, entry_point_type):
+    def __init__(self, instructions, thesaurus, vocabulary, blocks, story_fundamentals,
+                 drops, mods, attributes, entry_point_type):
         self.instructions = instructions
         self.thesaurus = thesaurus
         self.vocabulary = vocabulary
-        self.type_definitions = block_type_definitions
         self.blocks = blocks
         self.fundamentals = story_fundamentals
         self.drops = drops
@@ -105,7 +83,7 @@ class Crumbs:
                 sub_path.append(element)
                 self.path_mapper(map_to, current_level[element], sub_path)
 
-    def find_crumbs(self, crumblist_name):
+    def lookup_thesaurus(self, crumblist_name):
         return self.find_instructions(crumblist_name, True)
 
     # finds a crumblist using the map (returns [0]: crumblist, [1]: crumbs path)
@@ -113,10 +91,19 @@ class Crumbs:
         target_map = self.instructions_map if not lookup_thesaurus else self.thesaurus_map
         target = self.instructions if not lookup_thesaurus else self.thesaurus
 
-        full_path = target_map[crumblist_name]
-        if len(full_path) == 0:
-            return target[crumblist_name], full_path
+        if crumblist_name not in target_map.keys():
+            return crumblist_name
 
-        for path_level in full_path:
-            target = target[path_level]
-        return target[crumblist_name], full_path
+        full_path = target_map[crumblist_name]
+
+        #If it's not at the root level of the crumbs, find it
+        if len(full_path) != 0:
+            for path_level in full_path:
+                target = target[path_level]
+
+        instructions = target[crumblist_name]
+
+        if type(instructions) is not str:
+            return Utils.find_specific(instructions)
+        else:
+            return instructions

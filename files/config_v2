@@ -1,6 +1,6 @@
 peep: {
     name: yalla,
-    attribs: [ {id: testvalue_x, level: 5}, {id: testvalue_y, level: 2} ],
+    attribs: [ {id: testvalue_a, level: 5}, {id: testvalue_b, level: 2} ],
     gender: 0,
 }
 garbler: {

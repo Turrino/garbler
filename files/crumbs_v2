@@ -1,12 +1,12 @@
 {
   #This is all placeholdery stuff
-   sample_instructions: adjective identity tail_descriptor,
-   characters: adjective role tail_descriptor,
-   creatures: adjective role tail_descriptor,
-   items: {
+   sample_instructions: adjective identity tail,
+   character: adjective human tail,
+   creature: adjective role tail,
+   item: {
       type_a: item_adj item_type_a item_tail,
       type_b: item_adj item_type_a item_tail
    },
-   locations: loc_adj loc_type loc_tail,
+   location: loc_adj loc_type loc_tail,
    replacements: [creatures, items],
 }

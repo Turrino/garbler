@@ -3,10 +3,9 @@
   type: filler,
   canvas_id: 4,
   branches:
-  [
-    {
-      id: 1,
+  {
+    1:{
       situation: "text here... blah blah, saihdsadas",
     }
-  ]
+  }
 }

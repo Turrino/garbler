@@ -2,20 +2,20 @@ import os
 import yaml
 from builders.ForkParser import ForkParser
 from builders.ModParser import ModParser
-from builders.drawerer import Drawerer
-from builders.garbler import Garbler
+from builders.Drawerer import Drawerer
+from builders.Garbler import Garbler
 from Manifest import *
 
+files_path = os.path.join(os.path.dirname(__file__), "files")
 
 def yaml_loader(path):
-    joined_path = ""
+    full_path = files_path
     for name in path:
-        joined_path = os.path.join(joined_path, name)
-    with open(joined_path, 'r') as yaml_file:
+        full_path = os.path.join(full_path, name)
+    with open(full_path, 'r') as yaml_file:
         return yaml.load(yaml_file)
 
-
-def main():
+def get_default_garbler():
     config = yaml_loader(["config_v2"])
 
     instructions = yaml_loader(["crumbs_v2"])
@@ -23,39 +23,46 @@ def main():
     block_type_definitions = yaml_loader(["events", "block_type_definitions"])
     story_fundamentals = yaml_loader(["events", "story_fundamentals"])
     drops = yaml_loader(["events", "presets", "drops"])
-    mods = ModParser.parse_all(yaml_loader(["events", "presets", "mods"]))
-    attributes = yaml_loader(["events", "presets", "item_attributes"])
+    attributes = yaml_loader(["events", "presets", "attributes"])
+    mods = ModParser.parse_all(yaml_loader(["events", "presets", "mods"]), attributes)
 
     blocks_dict = {}
 
     entry_point = block_type_definitions["entry_point"]
     block_type_definitions = block_type_definitions["definitions"]
 
-    for definition in block_type_definitions:
-        blocks_dict[definition["type"]] = []
+    for definition in block_type_definitions.keys():
+        blocks_dict[definition] = []
 
-    for filename in os.listdir(os.path.join("events", "blocks")):
-        with open(os.path.join("events", "blocks", filename), 'r') as yaml_block:
-            block = ForkParser.parse(yaml.load(yaml_block), mods)
+    for filename in os.listdir(os.path.join(files_path, "events", "blocks")):
+        with open(os.path.join(files_path, "events", "blocks", filename), 'r') as yaml_block:
+            block = ForkParser.parse(yaml.load(yaml_block), mods, attributes)
+            # todo if a block def. has multiple out types, then they must be mapped out in the branches
+            for k, v in block_type_definitions[block["type"]].items():
+                block[k] = v
             blocks_dict[block["type"]].append(block)
 
     crumbs = Crumbs(instructions, thesaurus_vocabulary["thesaurus"], thesaurus_vocabulary["vocabulary"],
-                    block_type_definitions, blocks_dict, story_fundamentals, drops, mods, attributes, entry_point)
+                    blocks_dict, story_fundamentals, drops, mods, attributes, entry_point)
 
     peep_config = config["peep"]
     garbler_config = config["garbler"]
 
-    #todo remove once we have data coming from the proper source
+    # todo remove once we have data coming from the proper source
     peep = Peep(peep_config["name"], peep_config["attribs"], peep_config["gender"])
-    peep.ld = garbler_config["starting_ld"]-garbler_config["ld_spend"]
+    peep.ld = garbler_config["starting_ld"] - garbler_config["ld_spend"]
 
-    garbler = Garbler(crumbs, peep, garbler_config)
+    return Garbler(crumbs, peep, garbler_config)
+
+
+def main():
+    garbler = get_default_garbler()
 
     event = garbler.get_event()
 
-    drawerer = Drawerer(None)
+    drawerer = Drawerer()
 
-    drawed = drawerer.combine(event.calculated_outcomes)
+    drawed = drawerer.combine(event)
 
     drawed.show()
 

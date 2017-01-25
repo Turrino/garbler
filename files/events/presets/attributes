@@ -1,5 +1,5 @@
 {
-    Character: ["testvalue_a", "testvalue_b", "testvalue_b"]
+    Character: ["testvalue_a", "testvalue_b", "testvalue_c"],
     Items:  {
         type_a: [testvalue_x, testvalue_y, testvalue_a, testvalue_b, testvalue_c, testvalue_d, testvalue_e],
         type_b: [testvalue_z, testvalue_w],

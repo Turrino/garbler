@@ -2,10 +2,8 @@ from builders.ModParser import ModParser
 
 class ForkParser:
     @staticmethod
-    def parse(block, mods):
-        branch_ids = []
-        for item in block["branches"]:
-            branch_ids.append(item["id"])
+    def parse(block, mods, attributes):
+        for key, item in block["branches"].items():
             if "fork" in item.keys():
                 fork = []
                 split = item["fork"].split(";")
@@ -50,16 +48,29 @@ class ForkParser:
                         parsed_cond = {"and": [], "or": []}
 
                         while len(conditions) > 0:
-                            if conditions[0] not in ['and', 'or']:
-                                if conditions[0] == 'if':
-                                    conditions[0] = 'and'
+                            append_to = conditions[0]
+                            if append_to not in ['and', 'or']:
+                                if append_to == 'if':
+                                    append_to = 'and'
                                 else:
                                     raise ValueError('descriptive error here')
 
-                            condition = mods[conditions[1]] if conditions[1] in mods.keys()\
-                                else ModParser.parse(conditions[1])
-                            parsed_cond[conditions[0]].append(condition)
-                            conditions = conditions[2:]
+                            if conditions[1] in mods.keys():
+                                condition = mods[conditions[1]]
+                                conditions = conditions[2:]
+                            else:
+                                to_parse = conditions[1:]
+                                # check if there are multiple conditions, and split them
+                                for i in range(0, len(to_parse)):
+                                    if to_parse[i] in ['and', 'or']:
+                                        to_parse = to_parse[:i]
+                                        break
+
+                                condition = ModParser.parse(to_parse, attributes)
+                                conditions = conditions[len(to_parse)+1:]
+
+                            parsed_cond[append_to].append(condition)
+
 
                         fork_entry["if"] = parsed_cond
 
@@ -69,18 +80,17 @@ class ForkParser:
                     fork.append(fork_entry)
                 item["fork"] = fork
 
-        ForkParser.check_pointers(block, branch_ids)
+        ForkParser.check_pointers(block)
 
         return block
 
-
     @staticmethod
-    def check_pointers(block, branch_ids):
+    def check_pointers(block):
         # Go over the parsed forks again, see if their pointers make sense
-        for item in block["branches"]:
+        for key, item in block["branches"].items():
             if "fork" in item.keys():
                 for entry in item["fork"]:
-                    if entry["to"] not in branch_ids:
+                    if entry["to"] not in block["branches"].keys():
                         raise ValueError('descriptive error here')
         return
 

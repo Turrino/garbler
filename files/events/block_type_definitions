@@ -3,42 +3,31 @@
 {
   entry_point: intro,
   definitions:
-  [
-      {
-        type: intro,
+  {
+      intro: {
         out_args: [ trouble ],
-        out: [ quest_discovery ],
+        out: quest_discovery,
       },
-      {
-        type: quest_discovery,
-        in: [ intro ],
+      quest_discovery: {
         args: [ trouble ],
         out_args: [ trouble, quest ],
-        out: [ filler ]
+        out: filler
       },
-      {
-        type: filler,
-        in: [ quest_discovery ],
+      filler: {
         args: [ trouble, quest ],
         out_args: [ trouble, quest ],
-        out: [ resolution ]
+        out: resolution
       },
-      {
-        type: resolution,
-        in: [ quest_discovery ],
+      resolution: {
         args: [ trouble, quest ],
         out_args: [ trouble, quest ],
         out: [ end_good, end_bad ]
       },
-      {
-        type: end_good,
-        in: [ resolution ],
+      end_good: {
         args: [ trouble, quest ]
       },
-      {
-        type: end_bad,
-        in: [ resolution ],
+      end_bad: {
         args: [ trouble, quest ]
       }
-  ]
+  }
 }

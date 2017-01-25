@@ -8,9 +8,10 @@ from contextlib import contextmanager
 from builders.CustomFilters import CustomFilters
 from PIL import Image, ImageFilter
 
+
 class Drawerer:
 
-    def __init__(self, canvas_cache):
+    def __init__(self, canvas_cache=None):
         self.canvas_height = 0
         self.canvas_width = 0
         if canvas_cache is None:
@@ -21,12 +22,12 @@ class Drawerer:
         self.skeleton_names = os.listdir(self.skeletons)
         self.elements_cache = {}
 
-    def combine(self, outcomes):
-        combined = Image.new('RGBA', (self.canvas_width, len(outcomes)*self.canvas_height), color=50)
+    def combine(self, event):
+        combined = Image.new('RGBA', (self.canvas_width, len(event.tracker)*self.canvas_height), color=50)
 
         position = 0
 
-        for outcome in outcomes:
+        for outcome in event.tracker:
             piece = self.assemble_canvas(outcome)
             combined.paste(piece, (0, position))
             position += self.canvas_height
@@ -35,10 +36,11 @@ class Drawerer:
 
     def assemble_canvas(self, outcome):
         # to do: assemble all the pieces!
-        canvas = self.canvas_cache[outcome.canvas_id]
+        canvas = self.canvas_cache[outcome["canvas"]]
         img = Image.open(os.path.join('pictures/tiles/background', canvas.background))
-        if outcome.ld_sparkle:
-            img.paste(Image.open('pictures/ldstar.png'), (90, 1))
+        #todo redo ld distro
+        # if outcome.ld_sparkle:
+        #     img.paste(Image.open('pictures/ldstar.png'), (90, 1))
         for key, item in outcome.meta.items():
             if item["display"]:
 

@@ -3,37 +3,32 @@
   type: intro,
   canvas_id: 1,
   branches:
-  [
-    {
-      id: 1,
+  {
+    1:{
       situation: start here. drop something,
       drops: drop1,
       fork:
        + to 2 if mod1;
-        - to 3 if mod2 or lucky5;
+        - to 3 if random 50 or mod1;
         to 4
     },
-    {
-      id: 2,
+    2:{
       situation: text here... blah blah, saihdsadas,
       fork:
        to 5
     },
-    {
-      id: 3,
+    3:{
       situation: text here... blah blah, saihdsadas,
       fork:
        to 5
     },
-    {
-      id: 4,
+    4:{
       situation: text here... blah blah, saihdsadas,
       fork:
        to 5
     },
-    {
-      id: 5,
+    5:{
       situation: text here... blah blah, saihdsadas,
     },
-  ]
+  }
 }
