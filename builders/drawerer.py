@@ -1,5 +1,3 @@
-from configparser import ConfigParser
-from collections import Counter
 import random
 import os
 import yaml
@@ -10,8 +8,8 @@ from PIL import Image, ImageFilter
 
 
 class Drawerer:
-
-    def __init__(self, canvas_cache=None):
+    def __init__(self, crumbs, canvas_cache=None):
+        self.crumbs = crumbs
         self.canvas_height = 0
         self.canvas_width = 0
         if canvas_cache is None:
@@ -41,36 +39,30 @@ class Drawerer:
         #todo redo ld distro
         # if outcome.ld_sparkle:
         #     img.paste(Image.open('pictures/ldstar.png'), (90, 1))
-        for key, item in outcome.meta.items():
-            if item["display"]:
+        for itemlist in outcome["meta"]:
+            for item in itemlist:
+                if item["display"]:
+                    if item["cache_id"] is not None:
+                        if item["cache_id"] in self.elements_cache:
+                            return self.elements_cache["cache_id"]
 
-                if item["cache_id"] is not None:
-                    if item["cache_id"] in self.elements_cache:
-                        return self.elements_cache["cache_id"]
+                    item_img = self.transmogrify(item["type"], item["keys"])
+                    sequence = item["position"][1] if len(item["position"]) == 2 else 0
+                    coords = canvas.overlay[self.channel_to_rgb[item["position"][0]]][sequence]
+                    img.paste(item_img, coords)
 
-                item_img = self.transmogrify(item["type_path"], item["keys"])
-                sequence = item["position"][1] if len(item["position"]) == 2 else 0
-                coords = canvas.overlay[self.channel_to_rgb[item["position"][0]]][sequence]
-                img.paste(item_img, coords)
-
-                if item["cache_id"] is not None:
-                    self.elements_cache["cache_id"] = img
+                    if item["cache_id"] is not None:
+                        self.elements_cache["cache_id"] = img
         return img
 
     # ask for a type to be created, and the drawerer shall return a picture based on the info provided
-    def transmogrify(self, type_path, keys):
-        skeleton = self.get_skeleton(type_path)
-        assets = self.get_assets(keys)
-
-        #temp workraound
-        if skeleton is None:
-            skeleton = "sample"
-        if None in assets:
-            assets = [ "sample.png" ]
-
+    def transmogrify(self, crumb_type, keys):
+        skeleton = self.get_skeleton(crumb_type, True)
         skeleton_base = Image.open(os.path.join(self.skeletons, skeleton + self.extension))
         skeleton_overlay = self.overlay_to_list(self.get_overlay_metadata(
             os.path.join(self.skeletons, skeleton + self.overlay_ext)))
+
+        assets = self.get_assets(keys)
 
         # to do: introduce some integrity checks on the data so that this never happens.
         # but, if we still end up in this situation, do not crash, generate random overlay data instead
@@ -99,28 +91,50 @@ class Drawerer:
 
         return skeleton_base
 
+    def get_skeleton(self, crumb_type, use_potato=False):
+        # path list is ordered as: root > more specific nested levels
+        if crumb_type + self.extension in self.skeleton_names:
+            return crumb_type
+        elif crumb_type in self.crumbs.instructions_map.keys():
+            path = list(reversed(self.crumbs.instructions_map[crumb_type]))
+            if len(path) != 0:
+                for level in path:
+                    expected_filename = level + self.extension
+                    if expected_filename in self.skeleton_names:
+                        return level
 
-
-    def get_skeleton(self, type_path):
-        type_lookup = list(reversed(type_path))
-
-        for key in type_lookup:
-            expected_filename = key + self.extension
-            if expected_filename in self.skeleton_names:
-                return key  # to do: allow a file to have variants, especially skeletons/overlays
+        if use_potato:  # if we don't have even the most generic type
+            return self.potato_token
+        else:
+            raise ValueError("descriptive error here")
 
     def get_assets(self, keys):
         available_assets = []
 
-        for key in keys:
+        def find_asset(type_key):
             # could be either a png, or a yaml file
-            expected_filename = key + self.extension
-            if key in self.asset_names:
-                available_assets.append(self.deyamlify(os.path.join(self.assets, key)))
+            expected_filename = type_key + self.extension
+            if type_key in self.asset_names:
+                available_assets.append(self.deyamlify(os.path.join(self.assets, type_key)))
+                return True
             if expected_filename in self.asset_names:
                 available_assets.append(expected_filename)
-            else:
-                available_assets.append(None)
+                return True
+            return False
+
+        # todo: maybe map this in advance if there is need to
+        for key in keys:
+            found = find_asset(key)
+            if not found and key in self.crumbs.thesaurus_map.keys():
+                path = self.crumbs.thesaurus_map[key]
+                if len(path) != 0:
+                    path = list(reversed(path))  # start from the most specific
+                    for level in path:
+                        if find_asset(level):
+                            break  # make sure we don't get more than one
+
+        if len(available_assets) == 0:
+            available_assets.append(self.potato_token + self.extension)
 
         return available_assets
 
@@ -191,14 +205,17 @@ class Drawerer:
         return Canvasses
 
     # filepaths
+    files_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "files", "pictures")
+    tiles = os.path.join(files_path, "tiles")
+    skeletons = os.path.join(files_path, "skeletons")
+    assets = os.path.join(files_path, "assets")
+    backgrounds = os.path.join(tiles, "background")
+    overlays = os.path.join(tiles, "overlay")
+    static = os.path.join(tiles, "static")
+    default_overlay = "default_overlay.png"
     extension = ".png"
     overlay_ext = ".o.png"
-    backgrounds = "pictures/tiles/background"
-    overlays = "pictures/tiles/overlay"
-    default_overlay = "default_overlay.png"
-    static = "pictures/tiles/static"
-    skeletons = "pictures/skeletons"
-    assets = "pictures/assets"
+    potato_token = "_potato"
 
     # overlay colours
     ch1 = (255, 0, 0) #red

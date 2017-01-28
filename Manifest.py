@@ -1,4 +1,4 @@
-from utils import Utils
+from Utils import Utils
 
 class Peep:
     def __init__(self, name, attributes, gender):

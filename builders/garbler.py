@@ -1,9 +1,7 @@
 from collections import Counter
 from builders.Event import Event
-from utils import Utils
 import random
 import math
-import re
 from Manifest import *
 
 
@@ -17,94 +15,6 @@ class Garbler:
         self.ld_spend = config["ld_spend"]
         self.ld_activation = config["starting_ld"]*config["ld_activator"]
         self.random_mod = config["random_mod"]
-
-        self.story_cache = {}
-
-
-    def stuff_the_blanks(self, parameters_text):
-        positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
-        if len(positions) % 2 != 0:
-            raise ValueError("tags (@) are not even in text: {0}".format(parameters_text))
-
-        subs = []
-        for i in range(0, len(positions), 2):
-            #create a list of (replacement type, [repl startpos, repl endpos])
-            subs.append((parameters_text[positions[i]:positions[i+1]+1], [positions[i], positions[i+1]+1]))
-
-        metadata = {}
-
-        replacements = []
-        parameters_text = parameters_text.split('@')
-
-        for sub in subs:
-            replacement = sub[0][1:-1]
-
-            if replacement[0] == '%':
-                stored_info = self.story_cache[replacement[1:]]
-                repl_as_text = ' '.join(stored_info["keys"])
-                metadata[repl_as_text] = stored_info
-            else:
-                # mark the elements that we have to cache
-                must_remember = replacement[0] == '£'
-                repl_id = None
-                if must_remember:
-                    id_and_repl = replacement.split('£')
-                    id_and_repl.remove("")
-                    repl_id = id_and_repl[0]
-                    replacement = id_and_repl[1]
-
-                subset = replacement.find('$')
-                if subset > -1:
-                    splat = replacement.split('$')
-                    replacement = splat[0] + splat[1][1:] # take the $ tag and subset out, put the rest back
-                    subset = int(splat[1][:1])
-
-                overlay_pos = []
-                display_data = True if replacement.find('#') > -1 else False
-                if display_data: #trim+save the overlay data and leave the clean replacement
-                    splat = replacement.split('#')
-                    overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
-                    overlay_pos = [int(x) for x in overlay_pos]
-                    replacement = splat[0]
-
-                parsed_repl = self.get_element(replacement, subset)
-                repl_as_text = parsed_repl[0]
-                metadata[repl_as_text] = {"keys": parsed_repl[1], "display": display_data,
-                                          "type": replacement, "position": overlay_pos,
-                                          "cache_id": repl_id}
-                if must_remember:
-                    self.story_cache[repl_id] = metadata[repl_as_text]
-
-            replacements.append(repl_as_text)
-
-        filled_in_text = ""
-
-        trail = parameters_text[-1:][0] if len(parameters_text) % 2 != 0 else ""
-
-        for i in range(0, len(parameters_text) - 1, 2):
-            filled_in_text += parameters_text[i] + replacements[int(i/2)]
-
-        return filled_in_text+trail, metadata
-
-
-    def instructions_to_crumblist(self, instructions):
-        # if not a string, it's an explicit instruction
-        if type(instructions) is not str:
-            return instructions
-
-        # if it's not explicit, we need to find the pieces
-        crumblist = []
-        parsed_info = instructions.split(' ')
-        for entry in parsed_info:
-            if entry not in self.crumbs.vocabulary.keys():
-                # instructions may contain specific crumblists, or a super-type with multiple categories
-                # if it is a super-type, then traverse it until we find something we can use
-                entry = self.crumbs.lookup_thesaurus(entry)
-                Utils.find_specific(entry)
-
-            crumblist.append(self.crumbs.vocabulary[entry])
-
-        return crumblist
 
     #use get_meta to return both the string and the metadata
     def writerer(self, crumblist, subset=None, get_meta=False):
@@ -149,6 +59,25 @@ class Garbler:
         instructions = self.crumbs.find_instructions(object_name)
         crumblist = self.instructions_to_crumblist(instructions)
         return self.writerer(crumblist, subset, True)
+
+    def instructions_to_crumblist(self, instructions):
+        # if not a string, it's an explicit instruction
+        if type(instructions) is not str:
+            return instructions
+
+        # if it's not explicit, we need to find the pieces
+        crumblist = []
+        parsed_info = instructions.split(' ')
+        for entry in parsed_info:
+            if entry not in self.crumbs.vocabulary.keys():
+                # instructions may contain specific crumblists, or a super-type with multiple categories
+                # if it is a super-type, then traverse it until we find something we can use
+                entry = self.crumbs.lookup_thesaurus(entry)
+                Utils.find_specific(entry)
+
+            crumblist.append(self.crumbs.vocabulary[entry])
+
+        return crumblist
 
     def create_item(self, item_drop):
         name = self.writerer(self.crumbs.find_instructions(item_drop[0])[0], None, True)
@@ -333,60 +262,7 @@ class Garbler:
         return (segment_allocation > self.ld_activation/depth * (random.randrange(0,20)/ 10))
 
     def get_event(self):
-        event = Event(self.crumbs, self.crumbs.entry_point_type)
+        event = Event(self.crumbs, self.crumbs.entry_point_type, self)
         event.run_to_end()
         return event
-        #todo refactor calculate fork outcome here
 
-
-
-    def is_terminal(self, block):
-        return block.Keys()
-
-    # TODO event_patterns is no longer in use, find all instances and replace them with the new event blocks
-    def build_event_pattern(self, blocklist):
-        parsed_blocks = []
-
-        random_ints = random.sample(range(1, 10), len(blocklist))
-        rnd_sum = sum(random_ints)
-        ld_distro = []
-        for int in random_ints:
-            ld_distro.append(int / rnd_sum * len(blocklist))
-
-        for block in blocklist:
-            # a fork is a dictionary with key on the block outcome (+,-,=)
-            # and value on the block that needs to follow up + any extra text (optional)
-            fork = {}
-            for key_pointer in block["fork"]:
-                pv = key_pointer["pointer"]
-                fork[key_pointer["key"]] = Pointer(pv["to_id"], pv["text"])
-
-            # we need to select one variant out of all the possible ones; variants are not affected by event filters,
-            # and unused variants are simply discarded. variants will have different modifier weights
-            # (e.g. some variants might be more suitable for certain characters), so that the outcome is never guaranteed
-            # and we do not bind the event down to a single set of modifiers.
-            variant = block["variants"][random.randrange(0, len(block["variants"]))]
-            # each segment has a series of possible outcomes
-            segments = []
-
-            for segment in variant:
-                # this is where the actual text options are (1 for each outcome)
-                outcomes = []
-                for outcome in segment["outcomes"]:
-                    out = Outcome(outcome["text"], outcome["connotation"], outcome["canvas_id"])
-                    if "drops" in outcome:
-                        out.drops = outcome["drops"]
-                    outcomes.append(out)
-
-                # filters are used to influence which outcome is picked out of the segment
-                # based on characteristics, items, conditions, etc.
-                filter_data = segment["filtr"]
-                ch_mods = []
-                for mod in filter_data["char_mod"]:
-                    ch_mods.append(Modifier(mod["id"], mod["multi"]))
-                filter = Filter(ch_mods, [], [])
-                segments.append(Segment(outcomes, filter))
-
-            parsed_blocks.append(SegmentBlock(block["id"], segments, fork))
-
-        return parsed_blocks

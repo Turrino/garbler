@@ -89,7 +89,7 @@ Using the writer and get element:
     c = x.writerer("role item_adj loc_tail") > explicit instructions (not from crumbs_v2), gets the specified crumblists from the vocabulary
 
 
-Image generation
+Image generation (drawerer)
     Overlays
         Channels:
         Eigth channels for now, if we ever need more: make this more flexible.
@@ -101,6 +101,13 @@ Image generation
             (0, 85, 255) (blue) = ?
             (85, 0, 255) (violet) = ?
             (255, 0, 255) (pink) = ?
+    Finding assets:
+        The drawerer will traverse the crumbs from more specific to less specific types to find one it can use.
+        For every type it checks, it checks if that assets exists. If even the root level type cannot be found,
+        then it will use the "_potato" asset. This check is only performed for metadata that has been marked as visible
+        with the # token.
+        #todo: make this configurable, e.g. one can either enable the use of the potato token, or have the drawerer perform an assets consistency check against the crumbs
+
 		
 To do's:
 - Schema check on the breadcrumbs (ensure that if an event needs to generate something,

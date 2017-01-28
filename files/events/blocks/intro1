@@ -5,7 +5,7 @@
   branches:
   {
     1:{
-      situation: start here. drop something,
+      situation: start here. @type_a#@ drop something,
       drops: drop1,
       fork:
        + to 2 if mod1;
@@ -13,22 +13,22 @@
         to 4
     },
     2:{
-      situation: text here... blah blah, saihdsadas,
+      situation: text here... @creature#@ blah blah, saihdsadas,
       fork:
        to 5
     },
     3:{
-      situation: text here... blah blah, saihdsadas,
+      situation: text here... @item@ blah blah, saihdsadas,
       fork:
        to 5
     },
     4:{
-      situation: text here... blah blah, saihdsadas,
+      situation: text here... @item#@ @item@ blah blah, saihdsadas,
       fork:
        to 5
     },
     5:{
-      situation: text here... blah blah, saihdsadas,
+      situation: text here... @item#@ @location@ blah blah, saihdsadas,
     },
   }
 }

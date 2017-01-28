@@ -15,9 +15,7 @@ def yaml_loader(path):
     with open(full_path, 'r') as yaml_file:
         return yaml.load(yaml_file)
 
-def get_default_garbler():
-    config = yaml_loader(["config_v2"])
-
+def get_crumbs():
     instructions = yaml_loader(["crumbs_v2"])
     thesaurus_vocabulary = yaml_loader(["thesaurus"])
     block_type_definitions = yaml_loader(["events", "block_type_definitions"])
@@ -37,13 +35,19 @@ def get_default_garbler():
     for filename in os.listdir(os.path.join(files_path, "events", "blocks")):
         with open(os.path.join(files_path, "events", "blocks", filename), 'r') as yaml_block:
             block = ForkParser.parse(yaml.load(yaml_block), mods, attributes)
-            # todo if a block def. has multiple out types, then they must be mapped out in the branches
+            # todo integrity check: if a block def. has multiple out types, then they must be mapped out in the branches
             for k, v in block_type_definitions[block["type"]].items():
                 block[k] = v
             blocks_dict[block["type"]].append(block)
 
     crumbs = Crumbs(instructions, thesaurus_vocabulary["thesaurus"], thesaurus_vocabulary["vocabulary"],
                     blocks_dict, story_fundamentals, drops, mods, attributes, entry_point)
+
+    return crumbs
+
+
+def get_garbler(crumbs):
+    config = yaml_loader(["config_v2"])
 
     peep_config = config["peep"]
     garbler_config = config["garbler"]
@@ -55,12 +59,18 @@ def get_default_garbler():
     return Garbler(crumbs, peep, garbler_config)
 
 
+def get_default_garbler():
+    return get_garbler(get_crumbs())
+
+
 def main():
-    garbler = get_default_garbler()
+    crumbs = get_crumbs()
+
+    garbler = get_garbler(crumbs)
 
     event = garbler.get_event()
 
-    drawerer = Drawerer()
+    drawerer = Drawerer(crumbs)
 
     drawed = drawerer.combine(event)
 
