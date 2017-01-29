@@ -1,22 +1,5 @@
 from Utils import Utils
 
-class Peep:
-    def __init__(self, name, attributes, gender):
-        self.name = name
-        self.desc = ""
-        self.gender = gender
-        self.attributes = attributes
-        self.ld = 0
-        self.items = []
-        # to do: attributes
-
-class Outcome:
-    def __init__(self, text, connotation, canvas_id):
-        self.text = text
-        self.connotation = connotation
-        self.drops = []
-        self.canvas_id = canvas_id
-        self.ld_sparkle = False  # when the outcome was altered by the use of ld, use this indicator
 
 class Canvas:
     def __init__(self, identifier, background, overlay, static=None):
@@ -25,14 +8,6 @@ class Canvas:
         self.overlay = overlay
         self.static = static
 
-# Modifiers stem from characters, items and possibly other things too. Some mods are unique to each category,
-# while some are common and may stack (e.g. an item increasing a mod that a character already has).
-class Modifier():
-    def __init__(self, id, multipliers):
-        self.id = id  # this matches the id of an attribute
-        #  this is a list of integers lists (each inner list being a list of two;
-        #  the event to be influenced, and the strength of the effect
-        self.multipliers = multipliers
 
 class Item:
     def __init__(self, type, attributes, durability, name):
@@ -40,13 +15,6 @@ class Item:
         self.attributes = attributes
         self.durability = durability
         self.name = name
-
-    def print_attributes(self):
-        description = ""
-        for attr in self.attributes:
-            description += " {0} attr: {1}".format(attr.id, attr.level)
-        return description
-
 
 
 class Crumbs:
@@ -57,6 +25,7 @@ class Crumbs:
         self.vocabulary = vocabulary
         self.blocks = blocks
         self.fundamentals = story_fundamentals
+        self.main_char = self.fundamentals["context"]["peep"]
         self.drops = drops
         self.mods = mods
         self.item_attr = attributes["Items"]

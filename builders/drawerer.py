@@ -5,7 +5,7 @@ from Manifest import *
 from contextlib import contextmanager
 from builders.CustomFilters import CustomFilters
 from PIL import Image, ImageFilter
-
+from Utils import Utils
 
 class Drawerer:
     def __init__(self, crumbs, canvas_cache=None):
@@ -47,8 +47,19 @@ class Drawerer:
                             return self.elements_cache["cache_id"]
 
                     item_img = self.transmogrify(item["type"], item["keys"])
+                    # overlay channel (if not specified, use one at random)
+                    if len(item["position"]) == 2:
+                        channel = self.channel_to_rgb[item["position"][0]]
+                    else:
+                        channel = Utils.any_of_many(list(canvas.overlay.keys()), False)
+                    # available slots for that channel
                     sequence = item["position"][1] if len(item["position"]) == 2 else 0
-                    coords = canvas.overlay[self.channel_to_rgb[item["position"][0]]][sequence]
+                    coords = canvas.overlay[channel][sequence]
+                    # make sure we don't use an overlay point twice
+                    canvas.overlay[channel].pop(sequence)
+                    # remove channel if it has no more points
+                    if not len(canvas.overlay[channel]):
+                        canvas.overlay.pop(channel)
                     img.paste(item_img, coords)
 
                     if item["cache_id"] is not None:
@@ -122,7 +133,7 @@ class Drawerer:
                 return True
             return False
 
-        # todo: maybe map this in advance if there is need to
+        # todo: maybe map this in advance if there is the need to
         for key in keys:
             found = find_asset(key)
             if not found and key in self.crumbs.thesaurus_map.keys():

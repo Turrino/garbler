@@ -1,15 +1,23 @@
 from Utils import Utils
-
+import random
 
 class Event:
-    def __init__(self, crumbs, entry_point_type, garbler):
+    def __init__(self, crumbs, garbler):
         self.crumbs = crumbs
         self.current_block = None
-        self.fundamentals = {}
-        self.entry_point_type = entry_point_type
+        self.entry_point_type =  self.crumbs.entry_point_type
         self.garbler = garbler
         self.tracker = []
         self.story_cache = {}
+
+    def print(self):
+        full_txt = ""
+        for node in self.tracker:
+            for item in node["text"]:
+                full_txt += " "+item
+
+        print(full_txt)
+
 
     def run_to_end(self):
         go_to_block = self.entry_point_type
@@ -35,7 +43,8 @@ class Event:
             node_tracker["text"].append(parsed_text[0])
             meta = parsed_text[1]
             node_tracker["meta"].append(meta)
-            # todo process drops here, add to tracker
+            if "drops" in current_node.keys():
+                self.process_drops(current_node["drops"])
             go_to = self.calculate_fork(current_node)
 
         self.tracker.append(node_tracker)
@@ -54,8 +63,23 @@ class Event:
             if option["if"] is None:
                 return option["to"]
             else:
-                ands = [condition.apply(self.fundamentals) for condition in option["if"]["and"]]
-                ors = [condition.apply(self.fundamentals) for condition in option["if"]["or"]]
+                ands = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["and"]]
+                ors = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["or"]]
                 if ands.count(True) == len(ands) or True in ors:
                     return option["to"]
         raise ValueError('descriptive error here')
+
+    def process_drops(self, drops):
+        if type(drops) is str:
+            drops = self.crumbs.drops[drops]
+
+        if "ld" in drops and drops["ld"] != 0:
+            if (drops["ld"] < 0):
+                self.crumbs.main_char["ld"] -= random.randrange(0, -drops["ld"])
+            else:
+                self.crumbs.main_char["ld"] = random.randrange(0, drops["ld"])
+        if "items" in drops and drops["items"] != 0:
+            # each element contains: 0 = item type, 1 = tier upper limit, 2 = drop chance %
+            for item_drop in drops["items"]:
+                if random.randrange(0, 100) < item_drop[2]:
+                    self.crumbs.main_char["items"].append(self.garbler.create_item(item_drop))

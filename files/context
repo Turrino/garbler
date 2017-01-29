@@ -1,0 +1,15 @@
+peep:
+  {
+    name: yalla,
+    gender: 1,
+    attributes: {
+      testvalue_x: 2
+    },
+    ld: 50,
+    items: []
+  }
+event_input:
+  {
+    ld_spend: 0
+    # other stuff here?
+  }
