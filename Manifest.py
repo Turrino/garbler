@@ -8,15 +8,6 @@ class Canvas:
         self.overlay = overlay
         self.static = static
 
-
-class Item:
-    def __init__(self, type, attributes, durability, name):
-        self.type = type
-        self.attributes = attributes
-        self.durability = durability
-        self.name = name
-
-
 class Crumbs:
     def __init__(self, instructions, thesaurus, vocabulary, blocks, story_fundamentals,
                  drops, mods, attributes, entry_point_type):

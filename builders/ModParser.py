@@ -26,7 +26,7 @@ class ModParser:
         elif splat[0] == "is":
             if splat[1] not in attributes["Character"] or len(splat) != 4:
                 raise ValueError('descriptive error here')
-            args = {"attribute": splat[1], "comparison": splat[2], "value": int(splat[3])}
+            args = {"attribute": splat[1], "comparison": splat[2], "against": int(splat[3])}
             mod = Mod(args, ModParser.has_attribute)
 
         else:
@@ -40,13 +40,28 @@ class ModParser:
 
     @staticmethod
     def has_item(fundamentals, item_type, amount=1):
-        # todo implement story fundamentals
+        counter = amount
+        for item in fundamentals["context"]["peep"]["items"]:
+            if item["type"] == item_type:
+                if counter == 1:
+                    return True
+                else:
+                    counter -= 1
         return False
 
+
     @staticmethod
-    def has_attribute(fundamentals, attribute, comparison, value):
-        # todo implement story fundamentals
-        return True
+    def has_attribute(fundamentals, attribute, comparison, against):
+        amount = 0
+        if attribute in fundamentals["context"]["peep"]["attributes"]:
+            amount = fundamentals["context"]["peep"]["attributes"][attribute]
+            if amount == against and comparison.find('=') != -1:
+                return True
+            if amount > against and comparison.find('>')!= -1:
+                return True
+        if amount < against and comparison.find('<') != -1:
+            return True
+        return False
 
 
 class Mod:

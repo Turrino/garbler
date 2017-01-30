@@ -93,7 +93,8 @@ class Garbler:
                 else:
                     chosen_attributes[Utils.any_of_many(attributes_list)] = allocation
 
-        return Item(drop_info[0], chosen_attributes, durability, name)
+        return {"type": drop_info[0], "attributes": chosen_attributes,
+                 "durability": durability, "name": name}
 
 
 
