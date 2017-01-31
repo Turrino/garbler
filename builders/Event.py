@@ -2,22 +2,21 @@ from Utils import Utils
 import random
 
 class Event:
-    def __init__(self, crumbs, garbler):
+    def __init__(self, crumbs, garbler, chosinator):
         self.crumbs = crumbs
         self.current_block = None
-        self.entry_point_type =  self.crumbs.entry_point_type
+        self.entry_point_type = self.crumbs.entry_point_type
+        self.chosinator = chosinator
         self.garbler = garbler
         self.tracker = []
         self.story_cache = {}
+        self.text = ""
 
-    def print(self):
-        full_txt = ""
+    def set_text(self):
+        self.text = ""
         for node in self.tracker:
             for item in node["text"]:
-                full_txt += " "+item
-
-        print(full_txt)
-
+                self.text += " "+item
 
     def run_to_end(self):
         go_to_block = self.entry_point_type
@@ -25,6 +24,8 @@ class Event:
         while go_to_block is not None:
             self.current_block = Utils.any_of_many(self.crumbs.blocks[go_to_block])
             go_to_block = self.advance_nodes()
+
+        self.set_text()
 
     def advance_nodes(self):
         branches = self.current_block["branches"]
@@ -57,17 +58,20 @@ class Event:
             return None
 
     def calculate_fork(self, node):
-        if "fork" not in node.keys():
-            return None
-        for option in node["fork"]:
-            if option["if"] is None:
-                return option["to"]
-            else:
-                ands = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["and"]]
-                ors = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["or"]]
-                if ands.count(True) == len(ands) or True in ors:
+        keys = node.keys()
+        if "fork" in keys:
+            for option in node["fork"]:
+                if option["if"] is None:
                     return option["to"]
-        raise ValueError('descriptive error here')
+                else:
+                    ands = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["and"]]
+                    ors = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["or"]]
+                    if ands.count(True) == len(ands) or True in ors:
+                        return option["to"]
+            raise ValueError('descriptive error here')
+        elif "choice" in keys:
+            return self.chosinator.choose(node["choice"])
+        return None
 
     def process_drops(self, drops):
         if type(drops) is str:

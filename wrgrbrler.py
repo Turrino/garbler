@@ -5,6 +5,7 @@ from builders.ForkParser import ForkParser
 from builders.ModParser import ModParser
 from builders.Drawerer import Drawerer
 from builders.Garbler import Garbler
+from interaction.Chosinator import *
 from Manifest import *
 
 files_path = os.path.join(os.path.dirname(__file__), "files")
@@ -48,33 +49,30 @@ def get_crumbs():
 
     return crumbs
 
-
 def get_garbler(crumbs):
-    config = yaml_loader(["config_v2"])
-
     return Garbler(crumbs, config)
 
 
 def get_default_garbler():
     return get_garbler(get_crumbs())
 
-
 def main():
     crumbs = get_crumbs()
 
     garbler = get_garbler(crumbs)
 
-    event = Event(crumbs, garbler)
+    event = Event(crumbs, garbler, config["interaction"])
     event.run_to_end()
 
     drawerer = Drawerer(crumbs)
 
     drawed = drawerer.combine(event)
 
-    event.print()
+    print(event.text)
 
     drawed.show()
 
+config = yaml_loader(["config_v2"])
 
 if __name__ == '__main__':
     main()

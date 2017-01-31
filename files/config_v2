@@ -2,6 +2,7 @@
   template: simple,
   #multiplier, 1 = has no effect, >1 increases randomness, <1 makes other modifiers more relevant
   random_mod: 1,
+  interaction: !!python/object:interaction.Chosinator.AutoChosinator {}
   #
   # ld_activator: 0.65,
   # ld_variance: 0.75, # the higher, the least likely to activate
