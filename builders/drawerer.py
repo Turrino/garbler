@@ -1,11 +1,11 @@
 import random
 import os
 import yaml
-from Manifest import *
+from Manifest import Canvas
 from contextlib import contextmanager
-from builders.CustomFilters import CustomFilters
+from .CustomFilters import CustomFilters
 from PIL import Image, ImageFilter
-from Utils import Utils
+from .Utils import Utils
 
 class Drawerer:
     def __init__(self, crumbs, canvas_cache=None):
@@ -35,7 +35,7 @@ class Drawerer:
     def assemble_canvas(self, outcome):
         # to do: assemble all the pieces!
         canvas = self.canvas_cache[outcome["canvas"]]
-        img = Image.open(os.path.join('pictures/tiles/background', canvas.background))
+        img = Image.open(os.path.join(self.backgrounds, canvas.background))
         #todo redo ld distro
         # if outcome.ld_sparkle:
         #     img.paste(Image.open('pictures/ldstar.png'), (90, 1))

@@ -1,5 +1,4 @@
-from Utils import Utils
-
+from builders.Utils import Utils
 
 class Canvas:
     def __init__(self, identifier, background, overlay, static=None):

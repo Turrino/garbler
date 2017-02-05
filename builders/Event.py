@@ -1,16 +1,18 @@
-from Utils import Utils
+from .Utils import Utils
+from interaction import Chosinator
 import random
 
 class Event:
-    def __init__(self, crumbs, garbler, chosinator):
+    def __init__(self, crumbs, fetcher, chosinator):
         self.crumbs = crumbs
         self.current_block = None
         self.entry_point_type = self.crumbs.entry_point_type
         self.chosinator = chosinator
-        self.garbler = garbler
+        self.fetcher = fetcher
         self.tracker = []
         self.story_cache = {}
         self.text = ""
+        self.drawed = None
 
     def set_text(self):
         self.text = ""
@@ -40,7 +42,7 @@ class Event:
             node_tracker["node_ids"].append(go_to)
 
             parsed_text = Utils.stuff_the_blanks(current_node["situation"],
-                                                 self.story_cache, self.garbler.get_element)
+                                                 self.story_cache, self.fetcher.get_element)
             node_tracker["text"].append(parsed_text[0])
             meta = parsed_text[1]
             node_tracker["meta"].append(meta)
@@ -86,4 +88,4 @@ class Event:
             # each element contains: 0 = item type, 1 = tier upper limit, 2 = drop chance %
             for item_drop in drops["items"]:
                 if random.randrange(0, 100) < item_drop[2]:
-                    self.crumbs.main_char["items"].append(self.garbler.create_item(item_drop))
+                    self.crumbs.main_char["items"].append(self.fetcher.create_item(item_drop))

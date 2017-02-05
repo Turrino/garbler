@@ -1,11 +1,11 @@
 import unittest
-import wrgrbrler
-from Utils import Utils
+import Garbler
+from builders.Utils import Utils
 
 
 class UtilsTest(unittest.TestCase):
     def setUp(self):
-        self.grblr = wrgrbrler.get_default_garbler()
+        self.grblr = Garbler.get_default_garbler()
         self.default_text = 'this should not get deleted by a '
 
         def parse(x): return Utils.stuff_the_blanks(x, {}, self.grblr.get_element)

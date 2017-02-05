@@ -3,10 +3,9 @@ import math
 from Manifest import *
 
 
-class Garbler:
-    def __init__(self, parsed_crumbs, config):
+class Fetcher:
+    def __init__(self, parsed_crumbs):
         self.crumbs = parsed_crumbs
-        self.config = config
 
     #use get_meta to return both the string and the metadata
     def writerer(self, crumblist, subset=None, get_meta=False):
@@ -24,6 +23,9 @@ class Garbler:
         meta = []
 
         for element_list in crumblist:
+            #todo this happens when there are not enough crumbs and they all get used up; reload them as a last resort?
+            if not len(element_list):
+                element_list = ["POTATO"]
             element = fetch_crumb(element_list)
             meta.append(element)
             wroted = "{0} {1}".format(wroted, element)

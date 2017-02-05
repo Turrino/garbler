@@ -1,4 +1,4 @@
-from builders.ModParser import ModParser
+from .ModParser import ModParser
 
 class ForkParser:
     @staticmethod

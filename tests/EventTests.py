@@ -1,17 +1,16 @@
-from builders.Event import Event
-import wrgrbrler
+from Garbler import Garbler
 import unittest
 
 class EventTests(unittest.TestCase):
     def setUp(self):
-        garbler = wrgrbrler.get_default_garbler()
-        crumbs = wrgrbrler.get_crumbs()
-        self.event = Event(crumbs, garbler, AutoChosinator)
+        grblr = Garbler("C:\\_source\\garbler\\garbler\\files\\config")
+        self.event = grblr.event
         demo_type = "demo"
+        self.event.chosinator = TestChosinator()
         self.expected = "carrot"
         self.not_expected = "stick"
         self.event.entry_point_type = demo_type
-        crumbs.blocks[demo_type] = [{'args': [],
+        grblr.crumbs.blocks[demo_type] = [{'args': [],
                                     'type': demo_type,
                                     'name': demo_type,
                                     'branches':  {1: {'situation': '',
@@ -28,7 +27,7 @@ class EventTests(unittest.TestCase):
         self.assertTrue(self.event.text.find(self.expected) > -1)
         self.assertFalse(self.event.text.find(self.expected) == -1)
 
-class AutoChosinator:
+class TestChosinator:
     @staticmethod
     def choose(options):
         return 3

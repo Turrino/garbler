@@ -1,12 +1,12 @@
 import unittest
-import wrgrbrler
+import Garbler
 from builders.Drawerer import Drawerer
 
 
 class DrawererTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        crumbs = wrgrbrler.get_crumbs()
+        crumbs = Garbler.get_crumbs()
         sample_key = "a"  # nested thesaurus path, has specific asset (a)
         sample_key_x = "x"  # nested thesaurus path, has generic asset (n1, n2, but not n3)
         sample_key_x2 = "x2"  # nested thesaurus path, no asset

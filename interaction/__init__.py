@@ -1,0 +1,1 @@
+from .Chosinator import Auto
