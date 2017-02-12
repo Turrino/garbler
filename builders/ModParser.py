@@ -52,13 +52,12 @@ class ModParser:
 
     @staticmethod
     def has_attribute(fundamentals, attribute, comparison, against):
-        amount = 0
-        if attribute in fundamentals["context"]["peep"]["attributes"]:
-            amount = fundamentals["context"]["peep"]["attributes"][attribute]
-            if amount == against and comparison.find('=') != -1:
-                return True
-            if amount > against and comparison.find('>')!= -1:
-                return True
+        has_attr = attribute in fundamentals["context"]["peep"]["attributes"]
+        amount = fundamentals["context"]["peep"]["attributes"][attribute] if has_attr else 0
+        if amount == against and comparison.find('=') != -1:
+            return True
+        if amount > against and comparison.find('>')!= -1:
+            return True
         if amount < against and comparison.find('<') != -1:
             return True
         return False

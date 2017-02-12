@@ -1,5 +1,4 @@
 from .Utils import Utils
-from interaction import Chosinator
 import random
 
 class Event:
@@ -33,9 +32,8 @@ class Event:
         branches = self.current_block["branches"]
         current_node = {}
         go_to = 1
-        node_tracker = {"type": self.current_block["type"], "text": [],
-                        "canvas": self.current_block["canvas_id"], "meta" : [],
-                        "node_ids": []}
+
+        node_tracker = self.prepare_block_meta()
 
         while go_to is not None:
             current_node = branches[go_to]
@@ -58,6 +56,18 @@ class Event:
             return self.current_block["out"]
         else:  # No "out" means stop looking for more blocks
             return None
+
+    def prepare_block_meta(self):
+        if "location_types" in self.current_block.keys():
+            loc_type = Utils.any_of_many(self.current_block["location_types"], False)
+        else:
+            loc_type = "location"
+        location = self.fetcher.get_element(loc_type)
+        node_tracker = {"type": self.current_block["type"], "text": [],
+                        "location": location, "meta" : [],
+                        "node_ids": []}
+
+        return node_tracker
 
     def calculate_fork(self, node):
         keys = node.keys()

@@ -1,24 +1,37 @@
 import random
 import os
 import yaml
-from Manifest import Canvas
+from Crumbs import Canvas
 from contextlib import contextmanager
 from .CustomFilters import CustomFilters
 from PIL import Image, ImageFilter
 from .Utils import Utils
 
 class Drawerer:
-    def __init__(self, crumbs, canvas_cache=None):
+    def __init__(self, files_path, crumbs, canvas_cache=None):
         self.crumbs = crumbs
         self.canvas_height = 0
         self.canvas_width = 0
+        # filepaths
+        self.gfx_path = os.path.join(files_path, "pictures")
+        self.canvas = os.path.join(self.gfx_path, "canvas")
+        self.skeletons = os.path.join(self.gfx_path, "skeletons")
+        self.assets = os.path.join(self.gfx_path, "assets")
+        self.backgrounds = os.path.join(self.canvas, "background")
+        self.overlays = os.path.join(self.canvas, "overlay")
+        self.static = os.path.join(self.canvas, "static")
+        self.default_overlay = "default_overlay.png"
+        self.extension = ".png"
+        self.overlay_ext = ".o.png"
+        self.potato_token = "_potato"
+
+        self.asset_names = os.listdir(self.assets)
+        self.skeleton_names = os.listdir(self.skeletons)
+        self.elements_cache = {}
         if canvas_cache is None:
             self.canvas_cache = self.recreate_cache()
         else:
             self.canvas_cache = canvas_cache
-        self.asset_names = os.listdir(self.assets)
-        self.skeleton_names = os.listdir(self.skeletons)
-        self.elements_cache = {}
 
     def combine(self, event):
         combined = Image.new('RGBA', (self.canvas_width, len(event.tracker)*self.canvas_height), color=50)
@@ -32,9 +45,22 @@ class Drawerer:
 
         return combined
 
+    #todo: potentially allow meta keys lookup as well
+    #if the canvas cannot be found by subtype, then try to look for a canvas that matches one of the location keys
+    def get_canvas(self, location):
+        if location.subtype in self.canvas_cache.keys():
+            return self.canvas_cache[location.subtype]
+        path = self.crumbs.instructions_map[location.subtype]
+        if len(path) != 0:
+            path = list(reversed(path))
+            for level in path:
+                if level in self.canvas_cache.keys():
+                    return self.canvas_cache[level]
+        raise ValueError("Could not find a canvas for type: {0} or any of it's super-types ({1})"
+                         .format(location.subtype, str.join(",", path)))
+
     def assemble_canvas(self, outcome):
-        # to do: assemble all the pieces!
-        canvas = self.canvas_cache[outcome["canvas"]]
+        canvas = self.get_canvas(outcome["location"])
         img = Image.open(os.path.join(self.backgrounds, canvas.background))
         #todo redo ld distro
         # if outcome.ld_sparkle:
@@ -46,7 +72,7 @@ class Drawerer:
                         if item["cache_id"] in self.elements_cache:
                             return self.elements_cache["cache_id"]
 
-                    item_img = self.transmogrify(item["type"], item["keys"])
+                    item_img = self.transmogrify(item["object"].subtype, item["object"].meta)
                     # overlay channel (if not specified, use one at random)
                     if len(item["position"]) == 2:
                         channel = self.channel_to_rgb[item["position"][0]]
@@ -206,27 +232,14 @@ class Drawerer:
 
             static = os.path.join(self.static, filename) if filename in static_names else None
 
-            canvas_id = int(filename.replace(self.extension, ""))
+            canvas_type = filename.replace(self.extension, "")
 
-            Canvasses[canvas_id] = Canvas(canvas_id, filename, overlay, static)
+            Canvasses[canvas_type] = Canvas(canvas_type, filename, overlay, static)
 
         if not self.canvas_height or not self.canvas_width:
             raise ValueError("The reference sample for canvas has a weird size, check {0}".format(background_names[0]))
 
         return Canvasses
-
-    # filepaths
-    files_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "files", "pictures")
-    tiles = os.path.join(files_path, "tiles")
-    skeletons = os.path.join(files_path, "skeletons")
-    assets = os.path.join(files_path, "assets")
-    backgrounds = os.path.join(tiles, "background")
-    overlays = os.path.join(tiles, "overlay")
-    static = os.path.join(tiles, "static")
-    default_overlay = "default_overlay.png"
-    extension = ".png"
-    overlay_ext = ".o.png"
-    potato_token = "_potato"
 
     # overlay colours
     ch1 = (255, 0, 0) #red
@@ -240,12 +253,3 @@ class Drawerer:
 
     channels = [ch1, ch2, ch3, ch4, ch5, ch6, ch7, ch8]
     channel_to_rgb = { 1:(255, 0, 0),2:(255, 170, 0),3:(212, 255, 0),4:(0, 255, 85),5:(0, 255, 255),6:(0, 85, 255),7:(85, 0, 255),8:(255, 0, 255) }
-
-@contextmanager
-def cd(newdir):
-    prevdir = os.getcwd()
-    os.chdir(os.path.join(os.getcwd(), newdir))
-    try:
-        yield
-    finally:
-        os.chdir(prevdir)

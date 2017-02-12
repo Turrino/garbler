@@ -1,12 +1,12 @@
 import os
 import yaml
-from builders.ForkParser import ForkParser
-from builders.ModParser import ModParser
-from builders.Drawerer import Drawerer
-from builders.Fetcher import Fetcher
 from builders.Event import Event
-from Manifest import *
-
+from builders.Fetcher import Fetcher
+from builders.Drawerer import Drawerer
+from builders.ModParser import ModParser
+from builders.ForkParser import ForkParser
+from input.Modes import Modes
+from Crumbs import *
 
 class Garbler:
     def __init__(self, config_path):
@@ -14,13 +14,13 @@ class Garbler:
         self.files_path = self.config["files_folder"]
         self.crumbs = self.get_crumbs()
         self.fetcher = Fetcher(self.crumbs)
-        self.chosinator = self.config["interaction"]
+        self.chosinator = Modes(self.config["interaction"])
         self.event = Event(self.crumbs, self.fetcher, self.chosinator)
 
     def run_to_end(self, draw=False):
         self.event.run_to_end()
         if draw:
-            drawerer = Drawerer(self.crumbs)
+            drawerer = Drawerer(self.files_path, self.crumbs)
             self.event.drawed = drawerer.combine(self.event)
         return self.event
 

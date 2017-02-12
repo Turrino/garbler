@@ -1,18 +1,21 @@
 import unittest
-import Garbler
+from Garbler import Garbler
+from builders.Fetcher import Fetcher
 from builders.Utils import Utils
 
 
 class UtilsTest(unittest.TestCase):
     def setUp(self):
-        self.grblr = Garbler.get_default_garbler()
+        self.fetcher = Fetcher(Garbler("C:\\_source\\garbler\\garbler\\files\\config").crumbs)
         self.default_text = 'this should not get deleted by a '
-
-        def parse(x): return Utils.stuff_the_blanks(x, {}, self.grblr.get_element)
+        self.cache = {}
+        self.repl_type = 'type_a'
+        self.cache_id = 'speshul'
+        def parse(x): return Utils.stuff_the_blanks(x, self.cache, self.fetcher.get_element)
         self.parse_txt = parse
 
     def tearDown(self):
-        self.grblr = None
+        self.fetcher = None
 
     def testInvalidInstructions(self):
         with self.assertRaises(ValueError) as context:
@@ -26,8 +29,9 @@ class UtilsTest(unittest.TestCase):
         self.assertTrue(self.default_text in filled_in[0])
         parsed_item = filled_in[1][0]
         self.assertFalse(parsed_item["display"])
-        self.assertTrue(type(parsed_item["keys"]) is list)
-        self.assertEqual(parsed_item["type"], repl_type)
+        self.assertTrue(type(parsed_item["object"].meta) is list)
+        self.assertTrue(type(parsed_item["object"].text) is str)
+        self.assertEqual(parsed_item["object"].subtype, repl_type)
         self.assertEqual(parsed_item["cache_id"], None)
 
     def testVisibility(self):
@@ -45,14 +49,20 @@ class UtilsTest(unittest.TestCase):
         parsed_item = filled_in[1][0]
         self.assertEqual(1, parsed_item["subset"])
 
-    def testCachedReplacements(self):
-        repl_type = 'type_a'
-        cache_id = 'speshul'
-        test_text = '{0} @£{1}£{2}@'.format(self.default_text, cache_id, repl_type)
-        filled_in = self.parse_txt(test_text)
+    def setupCache(self):
+        test_text = '{0} @£{1}£{2}@'.format(self.default_text, self.cache_id, self.repl_type)
+        return self.parse_txt(test_text)
+
+    def testCachesReplacements(self):
+        filled_in = self.setupCache()
         self.assertTrue(self.default_text in filled_in[0])
         parsed_item = filled_in[1][0]
-        self.assertTrue(type(parsed_item["keys"]) is list)
-        self.assertEqual(parsed_item["type"], repl_type)
-        self.assertEqual(parsed_item["cache_id"], cache_id)
+        self.assertTrue(type(parsed_item["object"].meta) is list)
+        self.assertEqual(parsed_item["object"].subtype, self.repl_type)
+        self.assertEqual(parsed_item["cache_id"], self.cache_id)
 
+    def testCachedReplacements(self):
+        filled_in = self.setupCache()
+        test_text = '{0} @%{1}@'.format(self.default_text, self.cache_id)
+        self.assertTrue(self.default_text in filled_in[0])
+        self.assertTrue(self.cache[self.cache_id]["object"].text in filled_in[0])

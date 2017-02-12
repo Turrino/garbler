@@ -1,6 +1,6 @@
 import random
 import math
-from Manifest import *
+from Crumbs import *
 
 
 class Fetcher:
@@ -8,7 +8,7 @@ class Fetcher:
         self.crumbs = parsed_crumbs
 
     #use get_meta to return both the string and the metadata
-    def writerer(self, crumblist, subset=None, get_meta=False):
+    def writerer(self, crumblists, subset=None, get_meta=False):
         fetch_crumb = Utils.any_of_many
         # We use this only if a subset parameter (mood, gender...) is passed in, in order to access the sub-features
         # Then check if the selected element is a list - some elements are universal and do not have a subset
@@ -22,11 +22,12 @@ class Fetcher:
         wroted = ""
         meta = []
 
-        for element_list in crumblist:
+        for item in crumblists:
             #todo this happens when there are not enough crumbs and they all get used up; reload them as a last resort?
-            if not len(element_list):
-                element_list = ["POTATO"]
-            element = fetch_crumb(element_list)
+            if not len(item.crumbs):
+                element = "POTATO"
+            else:
+                element = fetch_crumb(item.crumbs)
             meta.append(element)
             wroted = "{0} {1}".format(wroted, element)
 
@@ -35,33 +36,29 @@ class Fetcher:
         else:
             return wroted[1:]
 
-
     # accepts a list of strings that indicate the crumbs path to the desired element
     # returns a tuple with: [0][0] actual text, [0][1] metadata lookup keys,
     # [1] actual path (will differ from category_path if ~ was used)
     def get_element(self, object_name, subset=-1):
         instructions = self.crumbs.find_instructions(object_name)
-        crumblist = self.instructions_to_crumblist(instructions)
-        return self.writerer(crumblist, subset, True)
+        self.fill_in_crumblist(instructions)
+        text_info = self.writerer(instructions.crumblists, subset, True)
+        return Element(instructions.sub_type, text_info[0], text_info[1])
 
-    def instructions_to_crumblist(self, instructions):
-        # if not a string, it's an explicit instruction
-        if type(instructions) is not str:
-            return instructions
-
-        # if it's not explicit, we need to find the pieces
-        crumblist = []
-        parsed_info = instructions.split(' ')
-        for entry in parsed_info:
+    def fill_in_crumblist(self, instructions):
+        for entry in instructions.descriptor:
             if entry not in self.crumbs.vocabulary.keys():
                 # instructions may contain specific crumblists, or a super-type with multiple categories
                 # if it is a super-type, then traverse it until we find something we can use
-                entry = self.crumbs.lookup_thesaurus(entry)
-                Utils.find_specific(entry)
-
-            crumblist.append(self.crumbs.vocabulary[entry])
-
-        return crumblist
+                single_item = self.crumbs.lookup_thesaurus(entry)
+                if single_item is None:
+                    raise ValueError("Could not find crumblist for: {0}.".format(entry))
+                subtype = single_item["type"]
+                item = single_item["item"]
+            else:
+                subtype = entry
+                item = entry
+            instructions.crumblists.append(Crumblist(subtype, self.crumbs.vocabulary[item]))
 
     def create_item(self, drop_info):
         name = self.get_element(drop_info[0])

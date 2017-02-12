@@ -1,12 +1,16 @@
 import unittest
-import Garbler
+from Garbler import Garbler
+from Crumbs import Element
+import os
 from builders.Drawerer import Drawerer
 
 
 class DrawererTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        crumbs = Garbler.get_crumbs()
+        self.grblr = Garbler(os.path.join(os.path.dirname(__file__), "..", "files\\config"))
+        self.grblr.run_to_end(True)
+        crumbs = self.grblr.crumbs
         sample_key = "a"  # nested thesaurus path, has specific asset (a)
         sample_key_x = "x"  # nested thesaurus path, has generic asset (n1, n2, but not n3)
         sample_key_x2 = "x2"  # nested thesaurus path, no asset
@@ -18,7 +22,7 @@ class DrawererTest(unittest.TestCase):
         crumbs.thesaurus_map[sample_key_x2] = ["na", "na"]
         crumbs.thesaurus_map[sample_key_y] = []
         crumbs.thesaurus_map[sample_key_y2] = []
-        self.drawerer = Drawerer(crumbs)
+        self.drawerer = Drawerer(self.grblr.files_path, crumbs)
         self.drawerer.asset_names = ["n1.png", "n2.png", "y.png", "z.png", "a.png"]
         self.all_keys = [sample_key, sample_key_x, sample_key_x2, sample_key_y,
                          sample_key_y2, sample_key_z, sample_key_z2]
@@ -73,3 +77,12 @@ class DrawererTest(unittest.TestCase):
     def testGetSkeletonNotNestedNoAsset(self):
         found = self.drawerer.get_skeleton(self.skeleton_type_d, True)
         self.assertEqual(self.drawerer.potato_token, found)
+
+    def testGetsCorrectCanvas(self):
+        self.expected = "cake"
+        self.key = "key"
+        self.drawerer.canvas_cache[self.key] = self.expected
+        self.grblr.crumbs.instructions_map["subtype"] = ["non existent type" , self.key, "non existent type"]
+        location_obj = Element('subtype', '', [])
+        canvas_type = self.drawerer.get_canvas(location_obj)
+        self.assertEqual(self.expected, canvas_type)

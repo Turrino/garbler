@@ -1,9 +1,10 @@
 import random
 
-
 class Utils:
     @staticmethod
     def any_of_many(elements, discard_item=True):
+        if type(elements) is not list:
+            return elements
         randomness = random.randrange(0, len(elements))
         item = elements[randomness]
         if discard_item:
@@ -11,12 +12,16 @@ class Utils:
         return item
 
     @staticmethod
-    def find_specific(composite_item):
-        while type(composite_item) is dict:
-            composite_item = composite_item[random.choice(list(composite_item.keys()))]
-        if type(composite_item) is list:
-            composite_item = Utils.any_of_many(composite_item, False)
-        return composite_item
+    def find_specific(composite_item, original_type):
+        sub_type = original_type
+        sub_item = composite_item
+        while (type(sub_item) is not str):
+            while type(sub_item) is dict:
+                sub_type = random.choice(list(sub_item.keys()))
+                sub_item = sub_item[sub_type]
+            while type(sub_item) is list:
+                sub_item = Utils.any_of_many(sub_item, False)
+        return { "item": sub_item, "type": sub_type }
 
     @staticmethod
     def stuff_the_blanks(parameters_text, story_cache, get_element):
@@ -42,7 +47,7 @@ class Utils:
 
             if replacement[0] == '%':
                 stored_info = story_cache[replacement[1:]]
-                repl_as_text = ' '.join(stored_info["keys"])
+                parsed_repl = stored_info["object"].text
                 metadata.append(stored_info)
             else:
                 # mark the elements that we have to cache
@@ -70,15 +75,14 @@ class Utils:
                     replacement = splat[0]
 
                 parsed_repl = get_element(replacement, subset)
-                repl_as_text = parsed_repl[0]
-                meta = {"keys": parsed_repl[1], "display": display_data,
-                        "type": replacement, "position": overlay_pos,
-                        "cache_id": repl_id, "subset": subset}
+                meta = {"object": parsed_repl, "display": display_data,
+                        "position": overlay_pos, "cache_id": repl_id,
+                        "subset": subset}
                 metadata.append(meta)
                 if must_remember:
                     story_cache[repl_id] = meta
 
-            replacements.append(repl_as_text)
+            replacements.append(parsed_repl.text)
 
         filled_in_text = ""
 

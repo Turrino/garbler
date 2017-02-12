@@ -7,5 +7,9 @@
       type_a: item_adj item_type_a item_tail,
       type_b: item_adj item_type_a item_tail
    },
-   location: loc_adj loc_type loc_tail,
+   # all location instructions must be subtyped under "location"
+   location: {
+      loc_a: loc_adj loc_type loc_tail,
+      loc_b: loc_adj loc_adj loc_type
+   }
 }

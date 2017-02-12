@@ -2,7 +2,7 @@
   template: simple,
   random_mod: 1,
   files_folder: C:\_source\garbler\garbler\files
-  interaction: !!python/object:interaction.Chosinator.Auto {}
+  interaction: auto
   #
   # ld_activator: 0.65,
   # ld_variance: 0.75, # the higher, the least likely to activate
