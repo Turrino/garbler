@@ -1,22 +1,23 @@
+#todo file is meant to be used to define what type of object is in the story fundamentals,
+#in order to call their actions. for the time being, they're all simple text replacements
 {
   trouble:
      {
-        calamities: {},
-        villains: {},
-        mysteries: {}
+        calamities: text,
+        villains: text,
+        mysteries: text
      },
-  helper: {},
-  nemesis: {},
-  comic_relief: {},
+  helper: text,
+  nemesis: text,
+  comic_relief: text,
   quest:
   {
-    provider: {},
+    provider: text,
     objective:
      {
-        target: {},
-        location: {},
-        reward: {}
+        target: text,
+        location: text,
+        reward: text
      }
   }
-
 }

@@ -1,36 +1,15 @@
 from builders.Utils import Utils
-from collections import namedtuple
-
-Crumblist = namedtuple('Crumblist', 'subtype crumbs')
-Element = namedtuple('Element', 'subtype text meta')
-
-# class Element:
-#     def __init__(self, sub_type, text, meta):
-#         self.sub_type = sub_type
-#         self.text = text
-#         self.meta = meta
-
-class Instructions:
-    def __init__(self, sub_type, descriptor):
-        self.sub_type = sub_type
-        self.descriptor = descriptor.split(' ')
-        self.crumblists = []
-
-class Canvas:
-    def __init__(self, type_id, background, overlay, static=None):
-        self.type_id = type_id
-        self.background = background
-        self.overlay = overlay
-        self.static = static
+from models.Models import *
 
 class Crumbs:
     def __init__(self, instructions, thesaurus, vocabulary, blocks, story_fundamentals,
-                 drops, mods, attributes, entry_point_type):
+                 primers, drops, mods, attributes, entry_point_type):
         self.instructions = instructions
         self.thesaurus = thesaurus
         self.vocabulary = vocabulary
         self.blocks = blocks
         self.fundamentals = story_fundamentals
+        self.primers = primers
         self.main_char = self.fundamentals["context"]["peep"]
         self.drops = drops
         self.mods = mods

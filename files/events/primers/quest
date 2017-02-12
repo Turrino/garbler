@@ -1,0 +1,22 @@
+{
+  quest:
+  {
+    provider: character,
+    objective:
+     {
+        target: creature,
+        location: location,
+        reward: item
+     }
+  },
+  quest2:
+  {
+    provider: character,
+    objective:
+     {
+        target: creature,
+        location: location,
+        reward: item
+     }
+  }
+}

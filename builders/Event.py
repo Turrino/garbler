@@ -24,6 +24,7 @@ class Event:
 
         while go_to_block is not None:
             self.current_block = Utils.any_of_many(self.crumbs.blocks[go_to_block])
+            self.prepare_block_arguments(self.current_block)
             go_to_block = self.advance_nodes()
 
         self.set_text()
@@ -57,12 +58,44 @@ class Event:
         else:  # No "out" means stop looking for more blocks
             return None
 
+    def prepare_block_arguments(self, block):
+        if "out_args" in block.keys():
+            for out_arg in block["out_args"]:
+                if "primers" in block.keys() and out_arg in block["primers"].keys():
+                    primer_reference = block["primers"][out_arg]
+                else:
+                    # use the default primer if there isn't one specified
+                    # default primers have the same name as the argument they represent
+                    primer_reference = out_arg
+
+                primer = self.crumbs.primers[out_arg][primer_reference]
+                cache_id = out_arg
+
+                def cache_element(primer_instructions, qualified_name):
+                    #todo allow lists in here? maybe
+                    element = self.fetcher.get_element(primer_instructions)
+                    self.story_cache[qualified_name] = element
+
+                def unpack_instructions(primer_dict, base_name):
+                    for k, v in primer_dict.items():
+                        if type(v) is str:
+                            cache_element(v, base_name + "." + k)
+                        else:
+                            unpack_instructions(v, base_name + "." + k)
+
+                #check if it is a complex (dict) primer, in which case it's multiple instructions
+                if type(primer) is dict:
+                    unpack_instructions(primer, cache_id)
+                else:
+                    cache_element(primer, cache_id)
+
     def prepare_block_meta(self):
         if "location_types" in self.current_block.keys():
             loc_type = Utils.any_of_many(self.current_block["location_types"], False)
         else:
             loc_type = "location"
         location = self.fetcher.get_element(loc_type)
+        #todo change this and similar DTOs into named tuples
         node_tracker = {"type": self.current_block["type"], "text": [],
                         "location": location, "meta" : [],
                         "node_ids": []}

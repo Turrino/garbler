@@ -6,6 +6,7 @@ from builders.Drawerer import Drawerer
 from builders.ModParser import ModParser
 from builders.ForkParser import ForkParser
 from input.Modes import Modes
+from Inspector import Inspector
 from Crumbs import *
 
 class Garbler:
@@ -40,11 +41,15 @@ class Garbler:
         with open(full_path, 'r') as yaml_file:
             return yaml.load(yaml_file)
 
-    def get_crumbs(self):
-        instructions = self.yaml_loader(["crumbs_v2"])
+    def get_crumbs(self, inspect=False):
+        instructions = self.yaml_loader(["crumbs"])
         thesaurus_vocabulary = self.yaml_loader(["thesaurus"])
         block_type_definitions = self.yaml_loader(["events", "block_type_definitions"])
         story_fundamentals = self.yaml_loader(["events", "story_fundamentals"])
+        primers = {}
+        for filename in os.listdir(os.path.join(self.files_path, "events", "primers")):
+            with open(os.path.join(self.files_path, "events", "primers", filename), 'r') as yaml_primer:
+                primers[filename] = yaml.load(yaml_primer)
         context = self.yaml_loader(["context"])
         story_fundamentals["context"] = context
         drops = self.yaml_loader(["events", "presets", "drops"])
@@ -68,7 +73,10 @@ class Garbler:
                 blocks_dict[block["type"]].append(block)
 
         crumbs = Crumbs(instructions, thesaurus_vocabulary["thesaurus"], thesaurus_vocabulary["vocabulary"],
-                        blocks_dict, story_fundamentals, drops, mods, attributes, entry_point)
+                        blocks_dict, story_fundamentals, primers, drops, mods, attributes, entry_point)
+
+        if inspect:
+            Inspector.run_all_checks(crumbs)
 
         return crumbs
 

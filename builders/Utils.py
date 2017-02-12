@@ -1,4 +1,5 @@
 import random
+from models.Models import *
 
 class Utils:
     @staticmethod
@@ -45,9 +46,16 @@ class Utils:
         for sub in subs:
             replacement = sub[0][1:-1]
 
-            if replacement[0] == '%':
-                stored_info = story_cache[replacement[1:]]
+            if replacement[0] in ['%', '!']:
+                replacement = replacement[1:]
+                check_for_display_data = Utils.check_for_display_data(replacement)
+                replacement = check_for_display_data.replacement
+                overlay_pos = check_for_display_data.display
+
+                stored_info = story_cache[replacement].copy()
                 parsed_repl = stored_info["object"].text
+                stored_info["display"] = True if len(overlay_pos) else False
+                stored_info["position"] = overlay_pos
                 metadata.append(stored_info)
             else:
                 # mark the elements that we have to cache
@@ -65,19 +73,12 @@ class Utils:
                     replacement = splat[0] + splat[1][1:]  # take the $ tag and subset out, put the rest back
                     subset = int(splat[1][:1])
 
-                overlay_pos = []
-                display_data = True if replacement.find('#') > -1 else False
-                if display_data:  # trim+save the overlay data and leave the clean replacement
-                    splat = replacement.split('#')
-                    if len(splat) != 1 and splat.count('') != len(splat)-1:
-                        overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
-                        overlay_pos = [int(x) for x in overlay_pos]
-                    replacement = splat[0]
+                check_for_display_data = Utils.check_for_display_data(replacement)
+                replacement = check_for_display_data.replacement
+                overlay_pos = check_for_display_data.display
 
                 parsed_repl = get_element(replacement, subset)
-                meta = {"object": parsed_repl, "display": display_data,
-                        "position": overlay_pos, "cache_id": repl_id,
-                        "subset": subset}
+                meta = Meta(parsed_repl, repl_id, overlay_pos, subset)
                 metadata.append(meta)
                 if must_remember:
                     story_cache[repl_id] = meta
@@ -92,3 +93,15 @@ class Utils:
             filled_in_text += parameters_text[i] + replacements[int(i / 2)]
 
         return filled_in_text + trail, metadata
+
+    @staticmethod
+    def check_for_display_data(replacement):
+        overlay_pos = []
+        display_data = True if replacement.find('#') > -1 else False
+        if display_data:  # trim+save the overlay data and leave the clean replacement
+            splat = replacement.split('#')
+            if len(splat) != 1 and splat.count('') != len(splat) - 1:
+                overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
+                overlay_pos = [int(x) for x in overlay_pos]
+            replacement = splat[0]
+        return DisplayData(overlay_pos, replacement)

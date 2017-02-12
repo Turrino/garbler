@@ -1,0 +1,8 @@
+{
+  trouble:
+     {
+        calamities: creature,
+        villains: creature,
+        mysteries: item
+     },
+}

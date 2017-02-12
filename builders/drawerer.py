@@ -67,19 +67,19 @@ class Drawerer:
         #     img.paste(Image.open('pictures/ldstar.png'), (90, 1))
         for itemlist in outcome["meta"]:
             for item in itemlist:
-                if item["display"]:
-                    if item["cache_id"] is not None:
-                        if item["cache_id"] in self.elements_cache:
-                            return self.elements_cache["cache_id"]
+                if item.display:
+                    if item.cache_id is not None:
+                        if item.cache_id in self.elements_cache:
+                            return self.elements_cache[item.cache_id]
 
-                    item_img = self.transmogrify(item["object"].subtype, item["object"].meta)
+                    item_img = self.transmogrify(item.element.subtype, item.element.meta)
                     # overlay channel (if not specified, use one at random)
-                    if len(item["position"]) == 2:
-                        channel = self.channel_to_rgb[item["position"][0]]
+                    if len(item.position) == 2:
+                        channel = self.channel_to_rgb[item.position[0]]
                     else:
                         channel = Utils.any_of_many(list(canvas.overlay.keys()), False)
                     # available slots for that channel
-                    sequence = item["position"][1] if len(item["position"]) == 2 else 0
+                    sequence = item.position[1] if len(item.position) == 2 else 0
                     coords = canvas.overlay[channel][sequence]
                     # make sure we don't use an overlay point twice
                     canvas.overlay[channel].pop(sequence)
@@ -88,8 +88,8 @@ class Drawerer:
                         canvas.overlay.pop(channel)
                     img.paste(item_img, coords)
 
-                    if item["cache_id"] is not None:
-                        self.elements_cache["cache_id"] = img
+                    if item.cache_id is not None:
+                        self.elements_cache.cache_id = img
         return img
 
     # ask for a type to be created, and the drawerer shall return a picture based on the info provided

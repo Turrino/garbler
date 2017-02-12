@@ -1,7 +1,7 @@
 
   template: simple,
   random_mod: 1,
-  files_folder: C:\_source\garbler\garbler\files
+  files_folder: C:\_source\garbler\files
   interaction: auto
   #
   # ld_activator: 0.65,
