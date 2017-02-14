@@ -1,6 +1,7 @@
 from Garbler import Garbler
 import os
 import unittest
+from models.Models import Choice
 
 class EventTests(unittest.TestCase):
     def setUp(self):
@@ -55,7 +56,14 @@ class EventTests(unittest.TestCase):
                                                                  {'to': 3, 'level': 0, 'text': ''}]},
                                                   2: {'situation': self.not_expected}, 3: {'situation': self.expected}},
                                     'location_types': [self.expected_loc]}]
-        self.event.run_to_end()
+
+        choice = None
+        while not self.event.complete:
+            fork = self.event.step(choice)
+            if type(fork) is Choice:
+                choice = TestChosinator.choose(fork)
+
+
 
 
     def testPicksTheCorrectChoicePath(self):

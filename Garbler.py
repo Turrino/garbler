@@ -15,11 +15,14 @@ class Garbler:
         self.files_path = self.config["files_folder"]
         self.crumbs = self.get_crumbs()
         self.fetcher = Fetcher(self.crumbs)
-        self.chosinator = Modes(self.config["interaction"])
-        self.event = Event(self.crumbs, self.fetcher, self.chosinator)
+        self.event = Event(self.crumbs, self.fetcher)
 
-    def run_to_end(self, draw=False):
-        self.event.run_to_end()
+    def run_to_end_auto(self, draw=False):
+        choice = None
+        while not self.event.complete:
+            fork = self.event.step(choice)
+            if type(fork) is Choice:
+                choice = Utils.any_of_many(fork.options, False).to
         if draw:
             drawerer = Drawerer(self.files_path, self.crumbs)
             self.event.drawed = drawerer.combine(self.event)
@@ -28,7 +31,7 @@ class Garbler:
     def get_new_event(self, restore_crumbs=False):
         if restore_crumbs:
             self.crumbs = self.get_crumbs()
-        event = Event(self.crumbs, self.fetcher, self.chosinator)
+        event = Event(self.crumbs, self.fetcher)
         return event
 
     def yaml_loader(self, path):

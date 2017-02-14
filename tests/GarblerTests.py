@@ -3,16 +3,16 @@ import unittest
 
 class GarblerTests(unittest.TestCase):
     def setUp(self):
-        self.grblr = Garbler("C:\\_source\\garbler\\files\\config")
+        self.garbler = Garbler("C:\\_source\\garbler\\files\\config")
 
     def tearDown(self):
-        self.grblr = None
+        self.garbler = None
 
     def testGetCrumbsWithInspection(self):
-        crumbs = self.grblr.get_crumbs(True)
+        crumbs = self.garbler.get_crumbs(True)
 
     def testReturnsEvent(self):
-        event = self.grblr.run_to_end()
+        event = self.garbler.run_to_end_auto()
         self.assertTrue(event.text != '')
         self.assertTrue(event.text != None)
         self.assertTrue(len(event.text) > 1)

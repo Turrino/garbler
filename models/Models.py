@@ -3,6 +3,8 @@ from collections import namedtuple
 DisplayData = namedtuple('DisplayData', 'display replacement')
 Crumblist = namedtuple('Crumblist', 'subtype crumbs')
 Element = namedtuple('Element', 'subtype text meta')
+Choice = namedtuple('Choice', 'situation options')
+Option = namedtuple('Option', 'to level text')
 
 class Meta:
     def __init__(self, element, elem_id, overlay_pos, subset=-1):

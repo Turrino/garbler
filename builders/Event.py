@@ -1,16 +1,20 @@
 from .Utils import Utils
+from models.Models import Choice
+from models.Models import Option
 import random
 
 class Event:
-    def __init__(self, crumbs, fetcher, chosinator):
+    def __init__(self, crumbs, fetcher):
         self.crumbs = crumbs
         self.current_block = None
-        self.entry_point_type = self.crumbs.entry_point_type
-        self.chosinator = chosinator
-        self.fetcher = fetcher
+        self.current_node = None
+        self.tracking_element = None
         self.tracker = []
+        self.entry_point_type = self.crumbs.entry_point_type
+        self.fetcher = fetcher
         self.story_cache = {}
         self.text = ""
+        self.complete = False
         self.drawed = None
 
     def set_text(self):
@@ -19,75 +23,93 @@ class Event:
             for item in node["text"]:
                 self.text += " "+item
 
-    def run_to_end(self):
-        go_to_block = self.entry_point_type
+    def step(self, resume_from=None):
+        if resume_from is None:
+            pointer = self.entry_point_type
+            resume = False
+        else:
+            pointer = -1
+            resume = True
 
-        while go_to_block is not None:
-            self.current_block = Utils.any_of_many(self.crumbs.blocks[go_to_block])
-            self.prepare_block_arguments(self.current_block)
-            go_to_block = self.advance_nodes()
+        while resume or (pointer is not None and type(pointer) is not Choice):
+            if resume:
+                resume = False
+            else:
+                self.current_block = Utils.any_of_many(self.crumbs.blocks[pointer])
+                self.prepare_block_arguments(self.current_block)
+            pointer = self.advance_nodes(resume_from)
+            resume_from = None
 
+        if type(pointer) is Choice:
+            return pointer
+
+        self.complete = True
         self.set_text()
 
-    def advance_nodes(self):
-        branches = self.current_block["branches"]
-        current_node = {}
-        go_to = 1
+    def advance_nodes(self, resume_from=None):
+        if resume_from is not None:
+            go_to = resume_from
+        else:
+            go_to = 1
+            self.tracking_element = self.prepare_block_meta()
 
-        node_tracker = self.prepare_block_meta()
+        while go_to is not None and type(go_to) is not Choice:
+            self.current_node = self.current_block["branches"][go_to]
+            self.tracking_element["node_ids"].append(go_to)
 
-        while go_to is not None:
-            current_node = branches[go_to]
-            node_tracker["node_ids"].append(go_to)
-
-            parsed_text = Utils.stuff_the_blanks(current_node["situation"],
+            parsed_text = Utils.stuff_the_blanks(self.current_node["situation"],
                                                  self.story_cache, self.fetcher.get_element)
-            node_tracker["text"].append(parsed_text[0])
+            self.tracking_element["text"].append(parsed_text[0])
             meta = parsed_text[1]
-            node_tracker["meta"].append(meta)
-            if "drops" in current_node.keys():
-                self.process_drops(current_node["drops"])
-            go_to = self.calculate_fork(current_node)
+            self.tracking_element["meta"].append(meta)
+            if "drops" in self.current_node.keys():
+                self.process_drops(self.current_node["drops"])
+            go_to = self.calculate_fork(self.current_node)
 
-        self.tracker.append(node_tracker)
-
-        if "terminal" in current_node.keys():
-            return current_node["terminal"]
-        elif "out" in self.current_block:
-            return self.current_block["out"]
-        else:  # No "out" means stop looking for more blocks
-            return None
+        if type(go_to) is Choice:
+            return go_to
+        else:
+            self.tracker.append(self.tracking_element)
+            if "terminal" in self.current_node.keys():
+                return self.current_node["terminal"]
+            elif "out" in self.current_block:
+                return self.current_block["out"]
+            else:  # No "out" means stop looking for more blocks
+                return None
 
     def prepare_block_arguments(self, block):
         if "out_args" in block.keys():
             for out_arg in block["out_args"]:
-                if "primers" in block.keys() and out_arg in block["primers"].keys():
-                    primer_reference = block["primers"][out_arg]
-                else:
-                    # use the default primer if there isn't one specified
-                    # default primers have the same name as the argument they represent
-                    primer_reference = out_arg
+                if out_arg not in self.story_cache.keys():
+                    if "primers" in block.keys() and out_arg in block["primers"].keys():
+                        primer_reference = block["primers"][out_arg]
+                    else:
+                        # use the default primer if there isn't one specified
+                        # default primers have the same name as the argument they represent
+                        primer_reference = out_arg
 
-                primer = self.crumbs.primers[out_arg][primer_reference]
-                cache_id = out_arg
+                    primer = self.crumbs.primers[out_arg][primer_reference]
+                    cache_id = out_arg
 
-                def cache_element(primer_instructions, qualified_name):
-                    #todo allow lists in here? maybe
-                    element = self.fetcher.get_element(primer_instructions)
-                    self.story_cache[qualified_name] = element
+                    def cache_element(primer_instructions, qualified_name):
+                        #todo allow lists in here? maybe
+                        element = self.fetcher.get_element(primer_instructions)
+                        self.story_cache[qualified_name] = element
 
-                def unpack_instructions(primer_dict, base_name):
-                    for k, v in primer_dict.items():
-                        if type(v) is str:
-                            cache_element(v, base_name + "." + k)
-                        else:
-                            unpack_instructions(v, base_name + "." + k)
+                    def unpack_instructions(primer_dict, base_name):
+                        for k, v in primer_dict.items():
+                            if type(v) is str:
+                                cache_element(v, base_name + "." + k)
+                            else:
+                                unpack_instructions(v, base_name + "." + k)
 
-                #check if it is a complex (dict) primer, in which case it's multiple instructions
-                if type(primer) is dict:
-                    unpack_instructions(primer, cache_id)
-                else:
-                    cache_element(primer, cache_id)
+                    #check if it is a complex (dict) primer, in which case it's multiple instructions
+                    if type(primer) is dict:
+                        # todo: this is to make sure we don't unpack them multiple times; find a better way so that we don't have useless stuff in the dictionary
+                        self.story_cache[primer_reference] = None
+                        unpack_instructions(primer, cache_id)
+                    else:
+                        cache_element(primer, cache_id)
 
     def prepare_block_meta(self):
         if "location_types" in self.current_block.keys():
@@ -115,7 +137,7 @@ class Event:
                         return option["to"]
             raise ValueError('descriptive error here')
         elif "choice" in keys:
-            return self.chosinator.choose(node["choice"])
+            return Choice(node["situation"], [Option(o["to"], o["level"], o["text"]) for o in node["choice"]])
         return None
 
     def process_drops(self, drops):

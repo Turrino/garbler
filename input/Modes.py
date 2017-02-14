@@ -1,5 +1,6 @@
 import random
 
+
 class Modes:
     def __init__(self, mode):
         modes = {"auto": self.auto, "console": self.console, "api": self.api}
@@ -19,5 +20,5 @@ class Modes:
 
     @staticmethod
     def api(options):
-        # todo ApiChosinator
+
         return None
