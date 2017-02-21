@@ -1,10 +1,9 @@
 {
   name: quest_discovery1,
   type: quest_discovery,
-  canvas_id: 2,
   branches:
   {
-    1:{
+    "1":{
       situation: "text here... blah blah, saihdsadas",
     }
   }

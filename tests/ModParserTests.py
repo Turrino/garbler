@@ -23,8 +23,8 @@ class ModParserTests(unittest.TestCase):
 
     def testGetRndMod(self):
         mod = ModParser.parse("random 33".split(" "), self.attributes)
-        self.assertEqual({"percentage": 33}, mod.args)
-        self.assertEqual(ModParser.rnd, mod.process)
+        self.assertEqual({"percentage": "33"}, mod.args)
+        self.assertEqual("rnd", mod.method)
 
     def testApplyRndMod(self):
         mod = ModParser.parse("random 100".split(" "), self.attributes)
@@ -33,8 +33,8 @@ class ModParserTests(unittest.TestCase):
 
     def testGetHasMod(self):
         mod = ModParser.parse("has a 12".split(" "), self.attributes)
-        self.assertEqual({"item_type": "a", "amount": 12}, mod.args)
-        self.assertEqual(ModParser.has_item, mod.process)
+        self.assertEqual({"item_type": "a", "amount": "12"}, mod.args)
+        self.assertEqual("has_item", mod.method)
 
     def testApplyHasModSingleQuantity(self):
         mod = ModParser.parse("has a".split(" "), self.attributes)
@@ -53,8 +53,8 @@ class ModParserTests(unittest.TestCase):
 
     def testGetIsMod(self):
         mod = ModParser.parse("is x >= 3".split(" "), self.attributes)
-        self.assertEqual({"attribute": "x", "comparison": ">=", "against": 3}, mod.args)
-        self.assertEqual(ModParser.has_attribute, mod.process)
+        self.assertEqual({"attribute": "x", "comparison": ">=", "against": "3"}, mod.args)
+        self.assertEqual("has_attribute", mod.method)
 
     def testApplyIsModSuccessBiggerThan(self):
         mod = ModParser.parse("is x > 2".split(" "), self.attributes)

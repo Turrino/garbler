@@ -9,7 +9,7 @@ class DrawererTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.grblr = Garbler(os.path.join(os.path.dirname(__file__), "..", "files\\config"))
-        self.grblr.run_to_end(True)
+        self.grblr.run_to_end_auto(True)
         crumbs = self.grblr.crumbs
         sample_key = "a"  # nested thesaurus path, has specific asset (a)
         sample_key_x = "x"  # nested thesaurus path, has generic asset (n1, n2, but not n3)

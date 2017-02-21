@@ -51,10 +51,10 @@ class EventTests(unittest.TestCase):
                                     'name': demo_type,
                                     'out_args': [ self.out_arg, self.out_arg2, self.out_arg3 ],
                                     'primers': { self.out_arg2: self.primer2 },
-                                    'branches':  {1: {'situation': '',
-                                                      'choice': [{'to': 2, 'level': 0, 'text': ''},
-                                                                 {'to': 3, 'level': 0, 'text': ''}]},
-                                                  2: {'situation': self.not_expected}, 3: {'situation': self.expected}},
+                                    'branches':  {'1': {'situation': '',
+                                                      'choice': [{'to': '2', 'level': '0', 'text': ''},
+                                                                 {'to': '3', 'level': '0', 'text': ''}]},
+                                                  '2': {'situation': self.not_expected}, '3': {'situation': self.expected}},
                                     'location_types': [self.expected_loc]}]
 
         choice = None
@@ -86,4 +86,4 @@ class EventTests(unittest.TestCase):
 class TestChosinator:
     @staticmethod
     def choose(options):
-        return 3
+        return "3"

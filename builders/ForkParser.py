@@ -14,7 +14,7 @@ class ForkParser:
             fork = []
             split = item[fork_type].split(";")
 
-            def get_connotation(symbols):
+            def parse_to_entry(symbols):
                 # Entry section
                 level = 0
                 connotation = []
@@ -25,7 +25,7 @@ class ForkParser:
                     consistent = connotation.count(connotation[0]) == count
                     if connotation not in outcome_symbols or not consistent:
                         raise ValueError('descriptive error here')
-                    level = count if connotation[0] == '+' else count * -1
+                    level = str(count if connotation[0] == '+' else count * -1)
                 fork_entry["level"] = level
                 return symbols[len(connotation):]
 
@@ -35,16 +35,16 @@ class ForkParser:
                     if fork_type == "choice":
                         instructions = entry.split('"')
                         meta = list(filter(lambda x: x != '', instructions[0].split(" ")))
-                        fork_entry["to"] = int(get_connotation(meta)[1])
+                        fork_entry["to"] = parse_to_entry(meta)[1]
                         fork_entry["text"] = instructions[1]
                     else:
                         # split may leave empty strings at the end or beginning - filter those out
                         instructions = list(filter(lambda x: x != '', entry.split(" ")))
-                        instructions = get_connotation(instructions)
+                        instructions = parse_to_entry(instructions)
                         # Pointer section
                         if instructions[0] != 'to':
                             raise ValueError('descriptive error here')
-                        fork_entry["to"] = int(instructions[1])
+                        fork_entry["to"] = instructions[1]
                         conditions = instructions[2:]
 
                         # If section

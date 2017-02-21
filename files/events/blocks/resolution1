@@ -1,20 +1,19 @@
 {
   name: resolution1,
   type: resolution,
-  canvas_id: 5,
   branches:
   {
-    1:{
+    "1":{
       situation: "text here... blah blah, saihdsadas",
       fork:
        "+ to 2 if random 50;
         - to 3"
     },
-    2:{
+    "2":{
       situation: "to good end",
       terminal: end_good
     },
-    3:{
+    "3":{
       situation: "to bad end",
       terminal: end_bad
     }

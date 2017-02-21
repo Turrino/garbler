@@ -4,7 +4,7 @@
   location_types: [ loc_b ],
   branches:
   {
-    1:{
+    "1":{
       situation: start here. @type_a#@ drop something,
       drops: drop1,
       fork:
@@ -12,22 +12,22 @@
         - to 3 if random 50 or mod1;
         to 4
     },
-    2:{
+    "2":{
       situation: text here... @creature#@ blah blah, saihdsadas,
       fork:
        to 5
     },
-    3:{
+    "3":{
       situation: text here... @item@ blah blah, saihdsadas,
       fork:
        to 5
     },
-    4:{
+    "4":{
       situation: text here... @item#@ @item@ blah blah, saihdsadas,
       fork:
        to 5
     },
-    5:{
+    "5":{
       situation: text here... @item#@ @location@ blah blah, saihdsadas,
     },
   }

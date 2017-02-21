@@ -31,7 +31,7 @@ class Event:
             pointer = -1
             resume = True
 
-        while resume or (pointer is not None and type(pointer) is not Choice):
+        while resume or (pointer is not None and not isinstance(pointer, Choice)):
             if resume:
                 resume = False
             else:
@@ -40,20 +40,21 @@ class Event:
             pointer = self.advance_nodes(resume_from)
             resume_from = None
 
-        if type(pointer) is Choice:
+        self.set_text()
+
+        if isinstance(pointer, Choice):
             return pointer
 
         self.complete = True
-        self.set_text()
 
     def advance_nodes(self, resume_from=None):
         if resume_from is not None:
             go_to = resume_from
         else:
-            go_to = 1
+            go_to = "1"
             self.tracking_element = self.prepare_block_meta()
 
-        while go_to is not None and type(go_to) is not Choice:
+        while go_to is not None and not isinstance(go_to, Choice):
             self.current_node = self.current_block["branches"][go_to]
             self.tracking_element["node_ids"].append(go_to)
 
@@ -66,7 +67,7 @@ class Event:
                 self.process_drops(self.current_node["drops"])
             go_to = self.calculate_fork(self.current_node)
 
-        if type(go_to) is Choice:
+        if isinstance(go_to, Choice):
             return go_to
         else:
             self.tracker.append(self.tracking_element)
@@ -98,13 +99,13 @@ class Event:
 
                     def unpack_instructions(primer_dict, base_name):
                         for k, v in primer_dict.items():
-                            if type(v) is str:
+                            if isinstance(v, str):
                                 cache_element(v, base_name + "." + k)
                             else:
                                 unpack_instructions(v, base_name + "." + k)
 
                     #check if it is a complex (dict) primer, in which case it's multiple instructions
-                    if type(primer) is dict:
+                    if isinstance(primer, dict):
                         # todo: this is to make sure we don't unpack them multiple times; find a better way so that we don't have useless stuff in the dictionary
                         self.story_cache[primer_reference] = None
                         unpack_instructions(primer, cache_id)
@@ -141,7 +142,7 @@ class Event:
         return None
 
     def process_drops(self, drops):
-        if type(drops) is str:
+        if isinstance(drops, str):
             drops = self.crumbs.drops[drops]
 
         if "ld" in drops and drops["ld"] != 0:
