@@ -15,6 +15,7 @@ class Garbler:
         self.files_path = self.config["files_folder"]
         self.crumbs = self.get_crumbs()
         self.fetcher = Fetcher(self.crumbs)
+        self.drawerer = Drawerer(self.files_path, self.crumbs)
         self.event = Event(self.crumbs, self.fetcher)
 
     def run_to_end_auto(self, draw=False):
@@ -24,9 +25,11 @@ class Garbler:
             if type(fork) is Choice:
                 choice = Utils.any_of_many(fork.options, False).to
         if draw:
-            drawerer = Drawerer(self.files_path, self.crumbs)
-            self.event.drawed = drawerer.combine(self.event)
+            self.event.drawed = self.drawerer.combine(self.event)
         return self.event
+
+    def get_current_canvas(self):
+        return self.drawerer.get_canvas_for(self.event.tracking_element)
 
     def get_new_event(self, restore_crumbs=False):
         if restore_crumbs:

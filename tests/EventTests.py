@@ -43,7 +43,9 @@ class EventTests(unittest.TestCase):
                                                 self.primer2: self.simple_instruction2 }
         #out_arg3 does not have multiple primers, but one primer with nested instructions
         grblr.crumbs.primers[self.out_arg3] = {self.out_arg3: self.complex_arg}
-
+        self.text_a = "a"
+        self.text_b = "b"
+        self.text_c = "c"
         self.event.entry_point_type = demo_type
         grblr.crumbs.vocabulary[self.expected_loc] = self.expected
         grblr.crumbs.blocks[demo_type] = [{'args': [],
@@ -51,39 +53,63 @@ class EventTests(unittest.TestCase):
                                     'name': demo_type,
                                     'out_args': [ self.out_arg, self.out_arg2, self.out_arg3 ],
                                     'primers': { self.out_arg2: self.primer2 },
-                                    'branches':  {'1': {'situation': '',
-                                                      'choice': [{'to': '2', 'level': '0', 'text': ''},
-                                                                 {'to': '3', 'level': '0', 'text': ''}]},
-                                                  '2': {'situation': self.not_expected}, '3': {'situation': self.expected}},
+                                    'branches':  {'1': {'situation': self.text_a,
+                                                        'fork': [{'to': '2', 'if': None, 'text': ''}]},
+                                                  '2': {'situation': self.text_b,
+                                                        'choice': [{'to': '3', 'level': '0', 'text': ''},
+                                                                   {'to': 'x', 'level': '0', 'text': ''}]},
+                                                  '3': {'situation': self.text_c,
+                                                        'choice': [{'to': '5', 'level': '0', 'text': ''},
+                                                                   {'to': 'x', 'level': '0', 'text': ''}]},
+                                                  '4': {'situation': self.not_expected},
+                                                  '5': {'situation': self.expected}},
                                     'location_types': [self.expected_loc]}]
 
+    def consumeEvent(self):
         choice = None
         while not self.event.complete:
             fork = self.event.step(choice)
             if type(fork) is Choice:
                 choice = TestChosinator.choose(fork)
 
-
-
+    def testGetsCorrectTextBatches(self):
+        text_batches = []
+        choice = None
+        while not self.event.complete:
+            fork = self.event.step(choice)
+            if type(fork) is Choice:
+                text_batches.append(self.event.get_text_batch())
+                choice = TestChosinator.choose(fork)
+        text_batches.append(self.event.get_text_batch())
+        #Branch 1 is a fork, so that will be bunched up with #2
+        #Branches 3 (choice) and 5 (terminal) should be individual batches, 4 should not be in
+        self.assertEquals("{0} {1}".format(self.text_a, self.text_b), text_batches[0])
+        self.assertEquals(self.text_c, text_batches[1])
+        self.assertEquals(self.expected, text_batches[2])
+        self.assertEquals(3, len(text_batches))
 
     def testPicksTheCorrectChoicePath(self):
+        self.consumeEvent()
         self.assertTrue(self.event.text.find(self.expected) > -1)
         self.assertFalse(self.event.text.find(self.expected) == -1)
 
     def testPicksTheCorrectLocation(self):
+        self.consumeEvent()
         self.assertEqual(self.event.tracker[0]["location"].text, self.expected)
         self.assertEqual(self.event.tracker[0]["location"].subtype, self.expected_loc)
 
     def testLoadsTheCorrectPrimers(self):
+        self.consumeEvent()
         self.assertEqual(self.simple_repl, self.event.story_cache[self.out_arg].text)
         self.assertEqual(self.simple_repl2, self.event.story_cache[self.out_arg2].text)
 
     def testLoadsNestedPrimersCorrectly(self):
+        self.consumeEvent()
         full_qualifier = self.out_arg3 + "." + self.outer_qualifier + "." + self.inner_qualifier
         self.assertTrue(full_qualifier in self.event.story_cache.keys())
         self.assertEqual(self.simple_repl, self.event.story_cache[self.out_arg].text)
 
 class TestChosinator:
     @staticmethod
-    def choose(options):
-        return "3"
+    def choose(fork):
+        return fork.options[0].to

@@ -14,14 +14,16 @@ class Event:
         self.fetcher = fetcher
         self.story_cache = {}
         self.text = ""
+        self.text_batch = ""
         self.complete = False
         self.drawed = None
 
-    def set_text(self):
-        self.text = ""
-        for node in self.tracker:
-            for item in node["text"]:
-                self.text += " "+item
+    # use to request all the text that has not been returned yet,
+    # e.g. the text from the last step
+    def get_text_batch(self):
+        to_return = self.text_batch.lstrip(" ")
+        self.text_batch = ""
+        return to_return
 
     def step(self, resume_from=None):
         if resume_from is None:
@@ -39,8 +41,6 @@ class Event:
                 self.prepare_block_arguments(self.current_block)
             pointer = self.advance_nodes(resume_from)
             resume_from = None
-
-        self.set_text()
 
         if isinstance(pointer, Choice):
             return pointer
@@ -60,7 +60,10 @@ class Event:
 
             parsed_text = Utils.stuff_the_blanks(self.current_node["situation"],
                                                  self.story_cache, self.fetcher.get_element)
+            # todo track text more efficiently
             self.tracking_element["text"].append(parsed_text[0])
+            self.text += " " + parsed_text[0]
+            self.text_batch += " " + parsed_text[0]
             meta = parsed_text[1]
             self.tracking_element["meta"].append(meta)
             if "drops" in self.current_node.keys():

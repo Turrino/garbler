@@ -33,6 +33,20 @@ class Drawerer:
         else:
             self.canvas_cache = canvas_cache
 
+    def join(self, existing_images):
+        loaded_images = []
+        for uri in existing_images:
+            loaded_images.append(Image.open(uri))
+        size = loaded_images[0].size
+        combined = Image.new('RGBA', (size[0], len(loaded_images) * size[1]), color=50)
+        position = 0
+        for img in loaded_images:
+            combined.paste(img, (0, position))
+            position += size[1]
+
+        return combined
+
+
     def combine(self, event):
         combined = Image.new('RGBA', (self.canvas_width, len(event.tracker)*self.canvas_height), color=50)
 
@@ -44,6 +58,9 @@ class Drawerer:
             position += self.canvas_height
 
         return combined
+
+    def get_canvas_for(self, tracker_node):
+        return self.assemble_canvas(tracker_node)
 
     #todo: potentially allow meta keys lookup as well
     #if the canvas cannot be found by subtype, then try to look for a canvas that matches one of the location keys
