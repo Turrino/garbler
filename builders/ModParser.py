@@ -19,6 +19,7 @@ class ModParser:
             mod = Mod({"percentage": splat[1]}, "rnd")
 
         elif splat[0] == "has":
+            #todo allow parsing target parameters who and inventory
             if splat[1] not in attributes["Items"].keys():
                 raise ValueError('descriptive error here')
             amount = splat[2] if len(splat) == 3 else 1
@@ -27,6 +28,7 @@ class ModParser:
             mod = Mod(args, "has_item")
 
         elif splat[0] == "is":
+            # todo allow parsing target parameters who and attributes
             if splat[1] not in attributes["Character"] or len(splat) != 4:
                 raise ValueError('descriptive error here')
             int(splat[3])
@@ -44,8 +46,8 @@ class Mod:
         self.args = args
         self.method = method
 
-    def apply(self, fundamentals):
-        self.args["fundamentals"] = fundamentals
+    def apply(self, story_cache):
+        self.args["story_cache"] = story_cache
         return getattr(Methods, self.method)(**self.args)
 
 class Methods:
@@ -54,9 +56,9 @@ class Methods:
         return random.randrange(0, 100) < int(percentage)
 
     @staticmethod
-    def has_item(fundamentals, item_type, amount=1):
+    def has_item(story_cache, item_type, amount=1, who="main", inventory="items"):
         counter = int(amount)
-        for item in fundamentals["context"]["peep"]["items"]:
+        for item in story_cache[who][inventory]:
             if item["type"] == item_type:
                 if counter == 1:
                     return True
@@ -65,10 +67,10 @@ class Methods:
         return False
 
     @staticmethod
-    def has_attribute(fundamentals, attribute, comparison, against):
+    def has_attribute(story_cache, attribute, comparison, against, who="main", attributes="attributes"):
         against = int(against)
-        has_attr = attribute in fundamentals["context"]["peep"]["attributes"]
-        amount = fundamentals["context"]["peep"]["attributes"][attribute] if has_attr else 0
+        has_attr = attribute in story_cache[who][attributes]
+        amount = story_cache[who][attributes][attribute] if has_attr else 0
         if amount == against and comparison.find('=') != -1:
             return True
         if amount > against and comparison.find('>') != -1:

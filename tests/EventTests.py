@@ -7,6 +7,7 @@ class EventTests(unittest.TestCase):
     def setUp(self):
         grblr = Garbler(os.path.join(os.path.dirname(__file__), "..", "files\\config"))
         self.event = grblr.event
+        self.crumbs = grblr.crumbs
         demo_type = "demo"
         self.event.chosinator = TestChosinator()
         self.expected = "carrot"
@@ -100,14 +101,14 @@ class EventTests(unittest.TestCase):
 
     def testLoadsTheCorrectPrimers(self):
         self.consumeEvent()
-        self.assertEqual(self.simple_repl, self.event.story_cache[self.out_arg].text)
-        self.assertEqual(self.simple_repl2, self.event.story_cache[self.out_arg2].text)
+        self.assertEqual(self.simple_repl, self.crumbs.story_cache[self.out_arg].text)
+        self.assertEqual(self.simple_repl2, self.crumbs.story_cache[self.out_arg2].text)
 
     def testLoadsNestedPrimersCorrectly(self):
         self.consumeEvent()
         full_qualifier = self.out_arg3 + "." + self.outer_qualifier + "." + self.inner_qualifier
-        self.assertTrue(full_qualifier in self.event.story_cache.keys())
-        self.assertEqual(self.simple_repl, self.event.story_cache[self.out_arg].text)
+        self.assertTrue(full_qualifier in self.crumbs.story_cache.keys())
+        self.assertEqual(self.simple_repl, self.crumbs.story_cache[self.out_arg].text)
 
 class TestChosinator:
     @staticmethod

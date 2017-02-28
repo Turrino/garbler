@@ -8,13 +8,15 @@ class Crumbs:
         self.thesaurus = thesaurus
         self.vocabulary = vocabulary
         self.blocks = blocks
-        self.fundamentals = story_fundamentals
         self.primers = primers
-        self.main_char = self.fundamentals["context"]["peep"]
-        self.drops = drops
         self.mods = mods
+
+        # todo make more generic. remove items & ld from the cache defaults
+        self.story_cache = {"fundamentals": story_fundamentals, "ld": 0, "items": []}
+        self.drops = drops
         self.item_attr = attributes["Items"]
         self.char_attr = attributes["Character"]
+
         self.entry_point_type = entry_point_type
         self.instructions_map = {}
         self.thesaurus_map = {}

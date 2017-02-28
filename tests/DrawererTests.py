@@ -8,7 +8,7 @@ from builders.Drawerer import Drawerer
 class DrawererTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.grblr = Garbler(os.path.join(os.path.dirname(__file__), "..", "files\\config"))
+        self.grblr = Garbler(os.path.join(os.path.dirname(__file__), "..", "files\\config"), True)
         self.grblr.run_to_end_auto(True)
         crumbs = self.grblr.crumbs
         sample_key = "a"  # nested thesaurus path, has specific asset (a)

@@ -10,7 +10,7 @@ class Inspector:
     @staticmethod
     def inspect_primers(crumbs):
         primers = crumbs.primers.keys()
-        for key, value in crumbs.fundamentals.items():
+        for key, value in crumbs.story_cache["fundamentals"].items():
             if key == "context":
                 continue
             if key in primers:

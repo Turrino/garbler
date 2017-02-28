@@ -12,7 +12,6 @@ class Event:
         self.tracker = []
         self.entry_point_type = self.crumbs.entry_point_type
         self.fetcher = fetcher
-        self.story_cache = {}
         self.text = ""
         self.text_batch = ""
         self.complete = False
@@ -59,7 +58,7 @@ class Event:
             self.tracking_element["node_ids"].append(go_to)
 
             parsed_text = Utils.stuff_the_blanks(self.current_node["situation"],
-                                                 self.story_cache, self.fetcher.get_element)
+                                                 self.crumbs.story_cache, self.fetcher.get_element)
             # todo track text more efficiently
             self.tracking_element["text"].append(parsed_text[0])
             self.text += " " + parsed_text[0]
@@ -84,7 +83,7 @@ class Event:
     def prepare_block_arguments(self, block):
         if "out_args" in block.keys():
             for out_arg in block["out_args"]:
-                if out_arg not in self.story_cache.keys():
+                if out_arg not in self.crumbs.story_cache.keys():
                     if "primers" in block.keys() and out_arg in block["primers"].keys():
                         primer_reference = block["primers"][out_arg]
                     else:
@@ -98,7 +97,7 @@ class Event:
                     def cache_element(primer_instructions, qualified_name):
                         #todo allow lists in here? maybe
                         element = self.fetcher.get_element(primer_instructions)
-                        self.story_cache[qualified_name] = element
+                        self.crumbs.story_cache[qualified_name] = element
 
                     def unpack_instructions(primer_dict, base_name):
                         for k, v in primer_dict.items():
@@ -110,7 +109,7 @@ class Event:
                     #check if it is a complex (dict) primer, in which case it's multiple instructions
                     if isinstance(primer, dict):
                         # todo: this is to make sure we don't unpack them multiple times; find a better way so that we don't have useless stuff in the dictionary
-                        self.story_cache[primer_reference] = None
+                        self.crumbs.story_cache[primer_reference] = None
                         unpack_instructions(primer, cache_id)
                     else:
                         cache_element(primer, cache_id)
@@ -135,8 +134,8 @@ class Event:
                 if option["if"] is None:
                     return option["to"]
                 else:
-                    ands = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["and"]]
-                    ors = [condition.apply(self.crumbs.fundamentals) for condition in option["if"]["or"]]
+                    ands = [condition.apply(self.crumbs.story_cache) for condition in option["if"]["and"]]
+                    ors = [condition.apply(self.crumbs.story_cache) for condition in option["if"]["or"]]
                     if ands.count(True) == len(ands) or True in ors:
                         return option["to"]
             raise ValueError('descriptive error here')
@@ -148,13 +147,14 @@ class Event:
         if isinstance(drops, str):
             drops = self.crumbs.drops[drops]
 
+        #todo make more generic, use a container key (not the root!) in the story_cache for drops and record them there
         if "ld" in drops and drops["ld"] != 0:
             if (drops["ld"] < 0):
-                self.crumbs.main_char["ld"] -= random.randrange(0, -drops["ld"])
+                self.crumbs.story_cache["ld"] -= random.randrange(0, -drops["ld"])
             else:
-                self.crumbs.main_char["ld"] = random.randrange(0, drops["ld"])
+                self.crumbs.story_cache["ld"] = random.randrange(0, drops["ld"])
         if "items" in drops and drops["items"] != 0:
             # each element contains: 0 = item type, 1 = tier upper limit, 2 = drop chance %
             for item_drop in drops["items"]:
                 if random.randrange(0, 100) < item_drop[2]:
-                    self.crumbs.main_char["items"].append(self.fetcher.create_item(item_drop))
+                    self.crumbs.story_cache["items"].append(self.fetcher.create_item(item_drop))

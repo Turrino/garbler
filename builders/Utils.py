@@ -22,7 +22,18 @@ class Utils:
                 sub_item = sub_item[sub_type]
             while type(sub_item) is list:
                 sub_item = Utils.any_of_many(sub_item, False)
-        return { "item": sub_item, "type": sub_type }
+        return {"item": sub_item, "type": sub_type}
+
+    @staticmethod
+    def transform_all(instructions, transform, filter):
+        for key, value in instructions.items():
+            if isinstance(value, str) and filter(value):
+                instructions[key] = transform(value)
+            if isinstance(value, list):
+                instructions[key] = [transform(x) if filter(x) else x for x in value]
+            if isinstance(value, dict):
+                instructions[key] = Utils.transform_all(value, transform, filter)
+        return instructions
 
     @staticmethod
     def stuff_the_blanks(parameters_text, story_cache, get_element):

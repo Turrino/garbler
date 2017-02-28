@@ -10,13 +10,16 @@ from Inspector import Inspector
 from Crumbs import *
 
 class Garbler:
-    def __init__(self, config_path):
+    def __init__(self, config_path, load_context=False):
         self.config = self.yaml_loader(config_path)
         self.files_path = self.config["files_folder"]
         self.crumbs = self.get_crumbs()
         self.fetcher = Fetcher(self.crumbs)
         self.drawerer = Drawerer(self.files_path, self.crumbs)
         self.event = Event(self.crumbs, self.fetcher)
+        if load_context:
+            with open(os.path.join(self.files_path, "context"), 'r') as context_file:
+                self.add_context(context_file)
 
     def run_to_end_auto(self, draw=False):
         choice = None
@@ -47,6 +50,27 @@ class Garbler:
         with open(full_path, 'r') as yaml_file:
             return yaml.load(yaml_file)
 
+    # for integrity checks, have these loaded all at once,
+    # then check that all the special parameters in the blocks can be fetched from something in here
+    def add_context(self, instructions):
+        context_input = yaml.load(instructions)
+
+        def transform_function(parameter_text):
+            return Utils.stuff_the_blanks(parameter_text, self.crumbs.story_cache, self.fetcher.get_element)
+
+        #todo document usage of add_context and the special instruction $
+        def transform_filter(item):
+            return item[0] == '$'
+
+        parsed_instructions = Utils.transform_all(context_input, transform_function, transform_filter)
+
+        #todo check that we're not overwriting anything!!
+        if "identifier" in parsed_instructions.keys():
+            self.crumbs.story_cache[parsed_instructions["identifier"]] = parsed_instructions
+        else:
+            for key, value in parsed_instructions.items():
+                self.crumbs.story_cache[key] = value
+
     def get_crumbs(self, inspect=False):
         instructions = self.yaml_loader(["crumbs"])
         thesaurus_vocabulary = self.yaml_loader(["thesaurus"])
@@ -56,8 +80,6 @@ class Garbler:
         for filename in os.listdir(os.path.join(self.files_path, "events", "primers")):
             with open(os.path.join(self.files_path, "events", "primers", filename), 'r') as yaml_primer:
                 primers[filename] = yaml.load(yaml_primer)
-        context = self.yaml_loader(["context"])
-        story_fundamentals["context"] = context
         drops = self.yaml_loader(["events", "presets", "drops"])
         attributes = self.yaml_loader(["events", "presets", "attributes"])
         mods = ModParser.parse_all(self.yaml_loader(["events", "presets", "mods"]), attributes)
