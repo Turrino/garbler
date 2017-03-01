@@ -36,6 +36,53 @@ class Utils:
         return instructions
 
     @staticmethod
+    def get_individual_replacement(text, story_cache, get_element):
+        #todo sort out the symbols, we don't need two for the same thing.
+        #also consider replacing the @@ tokens with single %/! initializers,
+        #since we already know where they end
+        if text[0] in ['%', '!']:
+            text = text[1:]
+            check_for_display_data = Utils.check_for_display_data(text)
+            text = check_for_display_data.replacement
+            overlay_pos = check_for_display_data.display
+
+            cached_elem = story_cache[text]
+            if isinstance(cached_elem, Meta):
+                stored_info = story_cache[text].copy()
+                #parsed_repl = stored_info["object"].text
+                stored_info.display = True if len(overlay_pos) else False
+                stored_info.position = overlay_pos
+            else:
+                stored_info = cached_elem
+            return stored_info
+        else:
+            # mark the elements that we have to cache
+            must_remember = text[0] == '£'
+            repl_id = None
+            if must_remember:
+                id_and_repl = text.split('£')
+                id_and_repl.remove("")
+                repl_id = id_and_repl[0]
+                text = id_and_repl[1]
+
+            subset = text.find('$')
+            if subset > -1:
+                splat = text.split('$')
+                text = splat[0] + splat[1][1:]  # take the $ tag and subset out, put the rest back
+                subset = int(splat[1][:1])
+
+            check_for_display_data = Utils.check_for_display_data(text)
+            text = check_for_display_data.replacement
+            overlay_pos = check_for_display_data.display
+
+            parsed_repl = get_element(text, subset)
+            meta = Meta(parsed_repl, repl_id, overlay_pos, subset)
+            #metadata.append(meta)
+            if must_remember:
+                story_cache[repl_id] = meta
+            return meta
+
+    @staticmethod
     def stuff_the_blanks(parameters_text, story_cache, get_element):
         positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
 
@@ -57,44 +104,9 @@ class Utils:
         for sub in subs:
             replacement = sub[0][1:-1]
 
-            if replacement[0] in ['%', '!']:
-                replacement = replacement[1:]
-                check_for_display_data = Utils.check_for_display_data(replacement)
-                replacement = check_for_display_data.replacement
-                overlay_pos = check_for_display_data.display
-
-                stored_info = story_cache[replacement].copy()
-                parsed_repl = stored_info["object"].text
-                stored_info["display"] = True if len(overlay_pos) else False
-                stored_info["position"] = overlay_pos
-                metadata.append(stored_info)
-            else:
-                # mark the elements that we have to cache
-                must_remember = replacement[0] == '£'
-                repl_id = None
-                if must_remember:
-                    id_and_repl = replacement.split('£')
-                    id_and_repl.remove("")
-                    repl_id = id_and_repl[0]
-                    replacement = id_and_repl[1]
-
-                subset = replacement.find('$')
-                if subset > -1:
-                    splat = replacement.split('$')
-                    replacement = splat[0] + splat[1][1:]  # take the $ tag and subset out, put the rest back
-                    subset = int(splat[1][:1])
-
-                check_for_display_data = Utils.check_for_display_data(replacement)
-                replacement = check_for_display_data.replacement
-                overlay_pos = check_for_display_data.display
-
-                parsed_repl = get_element(replacement, subset)
-                meta = Meta(parsed_repl, repl_id, overlay_pos, subset)
-                metadata.append(meta)
-                if must_remember:
-                    story_cache[repl_id] = meta
-
-            replacements.append(parsed_repl.text)
+            parsed = Utils.get_individual_replacement(replacement, story_cache, get_element)
+            metadata.append(parsed)
+            replacements.append(parsed.element.text if isinstance(parsed, Meta) else parsed)
 
         filled_in_text = ""
 
@@ -103,6 +115,7 @@ class Utils:
         for i in range(0, len(parameters_text) - 1, 2):
             filled_in_text += parameters_text[i] + replacements[int(i / 2)]
 
+        #todo change to a proper retun type. do we need the meta to be passed around like this?
         return filled_in_text + trail, metadata
 
     @staticmethod

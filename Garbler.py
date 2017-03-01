@@ -5,21 +5,23 @@ from builders.Fetcher import Fetcher
 from builders.Drawerer import Drawerer
 from builders.ModParser import ModParser
 from builders.ForkParser import ForkParser
-from input.Modes import Modes
+import uuid
 from Inspector import Inspector
 from Crumbs import *
 
 class Garbler:
-    def __init__(self, config_path, load_context=False):
+    def __init__(self, config_path, load_context=False, cache_directory=None):
         self.config = self.yaml_loader(config_path)
         self.files_path = self.config["files_folder"]
         self.crumbs = self.get_crumbs()
         self.fetcher = Fetcher(self.crumbs)
         self.drawerer = Drawerer(self.files_path, self.crumbs)
+        self.session_cache = {"images": []}
         self.event = Event(self.crumbs, self.fetcher)
         if load_context:
             with open(os.path.join(self.files_path, "context"), 'r') as context_file:
                 self.add_context(context_file)
+        self.cache_directory = cache_directory
 
     def run_to_end_auto(self, draw=False):
         choice = None
@@ -35,10 +37,41 @@ class Garbler:
         return self.drawerer.get_canvas_for(self.event.tracking_element)
 
     def get_new_event(self, restore_crumbs=False):
+        self.session_cache = {"images": []}
         if restore_crumbs:
             self.crumbs = self.get_crumbs()
         event = Event(self.crumbs, self.fetcher)
         return event
+
+    # Will crash if there is no cache directory. Make a version that will work without it, if needed
+    def step(self, pointer=None):
+        fork = self.event.step(pointer)
+        choices = []
+        image = self.get_current_canvas()
+        img_name = "{0}.png".format(uuid.uuid4())
+        self.session_cache["images"].append(img_name)
+        image.save(os.path.join(self.cache_directory, img_name), "PNG")
+        if type(fork) is Choice:
+            complete = False
+            choices = fork.options
+            event_text = self.event.get_text_batch()
+        elif self.event.complete:
+            complete = True
+            event_text = self.event.text
+            img_name = "f__{}.png".format(uuid.uuid4())
+            cached_images = [os.path.join(self.cache_directory, img) for img in self.session_cache["images"]]
+            merged_images = self.drawerer.join(cached_images)
+            merged_images.save(os.path.join(self.cache_directory, img_name), "PNG")
+        else:
+            raise ValueError("cba")
+
+        self.session_cache["step"] = {
+            "complete": complete,
+            "choices": choices,
+            "text": event_text,
+            "image": img_name
+        }
+        return self.session_cache["step"]
 
     def yaml_loader(self, path):
         if type(path) is list:
@@ -56,9 +89,9 @@ class Garbler:
         context_input = yaml.load(instructions)
 
         def transform_function(parameter_text):
-            return Utils.stuff_the_blanks(parameter_text, self.crumbs.story_cache, self.fetcher.get_element)
+            return Utils.get_individual_replacement(parameter_text[1:], self.crumbs.story_cache, self.fetcher.get_element)
 
-        #todo document usage of add_context and the special instruction $
+        #todo document usage of add_context and the special instruction $. also change the subset command $ since it's the same symbol
         def transform_filter(item):
             return item[0] == '$'
 

@@ -30,15 +30,13 @@ class GarblerTests(unittest.TestCase):
 
     def testParsesSimpleAddedContext(self):
         self.garbler.add_context("{instructions: $creature}")
-        #todo fix this, it's borken
-        self.assertEquals({"instructions": "idk?"},
-                          self.garbler.crumbs.story_cache["instructions"])
+        self.assertEquals("creature", self.garbler.crumbs.story_cache["instructions"].element.subtype)
 
     def testParsesNestedAddedContext(self):
-        #todo ditto
         self.garbler.add_context("{instructions: { part1: $creature, part2: [ $type_a, $type_b ]}}")
-        self.assertEquals({"instructions": "idk?"},
-                          self.garbler.crumbs.story_cache["instructions"])
+        self.assertEquals("creature", self.garbler.crumbs.story_cache["instructions"]["part1"].element.subtype)
+        self.assertEquals("type_a", self.garbler.crumbs.story_cache["instructions"]["part2"][0].element.subtype)
+        self.assertEquals("type_b", self.garbler.crumbs.story_cache["instructions"]["part2"][1].element.subtype)
 
 
 

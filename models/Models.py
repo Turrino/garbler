@@ -14,6 +14,9 @@ class Meta:
         self.position = overlay_pos
         self.subset = subset
 
+    def __str__(self):
+        return self.element.text
+
     def copy(self):
         # don't copy the display information
         return Meta(self.element, self.cache_id, [], self.subset)
