@@ -31,14 +31,13 @@ class Fetcher:
             meta.append(element)
             wroted = "{0} {1}".format(wroted, element)
 
+        #todo a proper return, not this crap?
         if get_meta:
             return wroted[1:], meta
         else:
             return wroted[1:]
 
     # accepts a list of strings that indicate the crumbs path to the desired element
-    # returns a tuple with: [0][0] actual text, [0][1] metadata lookup keys,
-    # [1] actual path (will differ from category_path if ~ was used)
     def get_element(self, object_name, subset=-1):
         instructions = self.crumbs.find_instructions(object_name)
         self.fill_in_crumblist(instructions)

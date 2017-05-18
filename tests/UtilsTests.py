@@ -6,7 +6,8 @@ from builders.Utils import Utils
 
 class UtilsTest(unittest.TestCase):
     def setUp(self):
-        self.fetcher = Fetcher(Garbler("C:\\_source\\garbler\\files\\config").crumbs)
+        self.garbler = Garbler("C:\\_source\\garbler\\files\\config")
+        self.fetcher = Fetcher(self.garbler.crumbs)
         self.default_text = 'this should not get deleted by a '
         self.cache = {}
         self.repl_type = 'type_a'
