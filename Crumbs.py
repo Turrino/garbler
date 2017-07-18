@@ -3,7 +3,7 @@ from models.Models import *
 
 class Crumbs:
     def __init__(self, instructions, thesaurus, vocabulary, blocks, story_fundamentals,
-                 primers, drops, mods, attributes, entry_point_type):
+                 primers, drops, mods, attributes):
         self.instructions = instructions
         self.thesaurus = thesaurus
         self.vocabulary = vocabulary
@@ -17,7 +17,6 @@ class Crumbs:
         self.item_attr = attributes["Items"]
         self.char_attr = attributes["Character"]
 
-        self.entry_point_type = entry_point_type
         self.instructions_map = {}
         self.thesaurus_map = {}
         self.path_mapper(self.instructions_map, self.instructions)

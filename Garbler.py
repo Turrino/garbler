@@ -16,8 +16,7 @@ class Garbler:
         self.crumbs = self.get_crumbs()
         self.fetcher = Fetcher(self.crumbs)
         self.drawerer = Drawerer(self.files_path, self.crumbs)
-        self.session_cache = {"images": []}
-        self.event = Event(self.crumbs, self.fetcher)
+        self.event = self.get_new_event()
         if load_context:
             with open(os.path.join(self.files_path, "context"), 'r') as context_file:
                 self.add_context(context_file)
@@ -42,6 +41,7 @@ class Garbler:
             self.crumbs = self.get_crumbs()
         event = Event(self.crumbs, self.fetcher)
         return event
+
 
     # Will crash if there is no cache directory. Make a version that will work without it, if needed
     def step(self, pointer=None):
@@ -107,34 +107,24 @@ class Garbler:
     def get_crumbs(self, inspect=False):
         instructions = self.yaml_loader(["crumbs"])
         thesaurus_vocabulary = self.yaml_loader(["thesaurus"])
-        block_type_definitions = self.yaml_loader(["events", "block_type_definitions"])
-        story_fundamentals = self.yaml_loader(["events", "story_fundamentals"])
-        primers = {}
-        for filename in os.listdir(os.path.join(self.files_path, "events", "primers")):
-            with open(os.path.join(self.files_path, "events", "primers", filename), 'r') as yaml_primer:
-                primers[filename] = yaml.load(yaml_primer)
+
         drops = self.yaml_loader(["events", "presets", "drops"])
         attributes = self.yaml_loader(["events", "presets", "attributes"])
         mods = ModParser.parse_all(self.yaml_loader(["events", "presets", "mods"]), attributes)
 
         blocks_dict = {}
 
-        entry_point = block_type_definitions["entry_point"]
-        block_type_definitions = block_type_definitions["definitions"]
-
-        for definition in block_type_definitions.keys():
-            blocks_dict[definition] = []
-
         for filename in os.listdir(os.path.join(self.files_path, "events", "blocks")):
             with open(os.path.join(self.files_path, "events", "blocks", filename), 'r') as yaml_block:
                 block = ForkParser.parse(yaml.load(yaml_block), mods, attributes)
-                # todo integrity check: if a block def. has multiple out types, then they must be mapped out in the branches
-                for k, v in block_type_definitions[block["type"]].items():
-                    block[k] = v
-                blocks_dict[block["type"]].append(block)
+                if block["type"] in blocks_dict.keys():
+                    blocks_dict[block["type"]].append(block)
+                else:
+                    blocks_dict[block["type"]] = [block]
 
         crumbs = Crumbs(instructions, thesaurus_vocabulary["thesaurus"], thesaurus_vocabulary["vocabulary"],
-                        blocks_dict, story_fundamentals, primers, drops, mods, attributes, entry_point)
+                        #todo can we remove story_fundamentals and primers?
+                        blocks_dict, None, None, drops, mods, attributes)
 
         if inspect:
             Inspector.run_all_checks(crumbs)

@@ -11,5 +11,6 @@
    location: {
       loc_a: loc_adj loc_type loc_tail,
       loc_b: loc_adj loc_adj loc_type
-   }
+   },
+
 }

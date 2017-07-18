@@ -1,16 +1,43 @@
 import random
 from models.Models import *
 
+repl_token = '@'
+cache_token = '#'
+
 class Utils:
     @staticmethod
     def any_of_many(elements, discard_item=True):
         if type(elements) is not list:
             return elements
-        randomness = random.randrange(0, len(elements))
+        randomness = random.choice(elements)
         item = elements[randomness]
         if discard_item:
             elements.remove(item)
         return item
+
+    @staticmethod
+    def create_cached_element(instruction, crumbs, cache_key, primer_reference, fetcher):
+        def cache_element(instr_to_fetch, qualified_name):
+            # todo allow lists in here? maybe
+            element = fetcher.get_element(instr_to_fetch)
+            crumbs.story_cache[qualified_name] = element
+
+        def unpack_instructions(primer_dict, base_name):
+            for k, v in primer_dict.items():
+                if isinstance(v, str):
+                    cache_element(v, base_name + "." + k)
+                else:
+                    unpack_instructions(v, base_name + "." + k)
+
+        # check if it is a complex (dict) instruction that needs unpacking
+        if isinstance(instruction, dict):
+            # todo: this is to make sure we don't unpack them multiple times;
+            # find a better way so that we don't have useless stuff in the dictionary
+            # crumbs.story_cache[primer_reference] = None
+            unpack_instructions(instruction, cache_key)
+        else:
+            cache_element(instruction, cache_key)
+
 
     @staticmethod
     def find_specific(composite_item, original_type):
@@ -37,9 +64,7 @@ class Utils:
 
     @staticmethod
     def get_individual_replacement(text, story_cache, get_element):
-        #todo sort out the symbols, we don't need two for the same thing.
-        #also consider replacing the @@ tokens with single %/! initializers,
-        #since we already know where they end
+        #todo use pyparsing for this
         if text[0] in ['%', '!']:
             text = text[1:]
             check_for_display_data = Utils.check_for_display_data(text)
@@ -83,14 +108,14 @@ class Utils:
             return meta
 
     @staticmethod
-    def stuff_the_blanks(parameters_text, story_cache, get_element):
-        positions = [pos for pos, char in enumerate(parameters_text) if char == '@']
+    def create_replacements(parameters_text, story_cache, get_element):
+        positions = [pos for pos, char in enumerate(parameters_text) if char == repl_token]
 
         if len(positions) == 0:
             return parameters_text, []
 
         if len(positions) % 2 != 0:
-            raise ValueError("tags (@) are not even in text: {0}".format(parameters_text))
+            raise ValueError("tags are not even in text: {0}".format(parameters_text))
 
         subs = []
         for i in range(0, len(positions), 2):
@@ -99,7 +124,7 @@ class Utils:
 
         metadata = []
         replacements = []
-        parameters_text = parameters_text.split('@')
+        parameters_text = parameters_text.split(sp_token)
 
         for sub in subs:
             replacement = sub[0][1:-1]
@@ -118,14 +143,15 @@ class Utils:
         #todo change to a proper retun type. do we need the meta to be passed around like this?
         return filled_in_text + trail, metadata
 
-    @staticmethod
-    def check_for_display_data(replacement):
-        overlay_pos = []
-        display_data = True if replacement.find('#') > -1 else False
-        if display_data:  # trim+save the overlay data and leave the clean replacement
-            splat = replacement.split('#')
-            if len(splat) != 1 and splat.count('') != len(splat) - 1:
-                overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
-                overlay_pos = [int(x) for x in overlay_pos]
-            replacement = splat[0]
-        return DisplayData(overlay_pos, replacement)
+    #todo review and update the # symbol - already used by the cache
+    # @staticmethod
+    # def check_for_display_data(replacement):
+    #     overlay_pos = []
+    #     display_data = True if replacement.find('#') > -1 else False
+    #     if display_data:  # trim+save the overlay data and leave the clean replacement
+    #         splat = replacement.split('#')
+    #         if len(splat) != 1 and splat.count('') != len(splat) - 1:
+    #             overlay_pos = (splat[1]).split(',') if replacement.find(',') else splat[1]
+    #             overlay_pos = [int(x) for x in overlay_pos]
+    #         replacement = splat[0]
+    #     return DisplayData(overlay_pos, replacement)

@@ -11,7 +11,7 @@ class Modes:
 
     @staticmethod
     def auto(options):
-        return options[random.randrange(0,len(options))]["to"]
+        return options[random.choice(0,len(options))]["to"]
 
     @staticmethod
     def console(options):

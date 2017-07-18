@@ -1,6 +1,6 @@
 {
-  name: resolution1,
-  type: resolution,
+  name: encounter1,
+  type: sub-task,
   branches:
   {
     "1":{
@@ -11,11 +11,11 @@
     },
     "2":{
       situation: "to good end",
-      terminal: end_good
+      terminal: resolution
     },
     "3":{
       situation: "to bad end",
-      terminal: end_bad
+      terminal: resolution
     }
   }
 }

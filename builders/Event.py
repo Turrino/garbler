@@ -10,7 +10,8 @@ class Event:
         self.current_node = None
         self.tracking_element = None
         self.tracker = []
-        self.entry_point_type = self.crumbs.entry_point_type
+        #todo prototype version only has one block. add flow system back for v2
+        self.entry_point_type = "sub-task"
         self.fetcher = fetcher
         self.text = ""
         self.text_batch = ""
@@ -91,28 +92,9 @@ class Event:
                         # default primers have the same name as the argument they represent
                         primer_reference = out_arg
 
-                    primer = self.crumbs.primers[out_arg][primer_reference]
-                    cache_id = out_arg
+                    Utils.create_cached_element(self.crumbs.primers[out_arg][primer_reference],
+                                             self.crumbs, out_arg, primer_reference, self.fetcher)
 
-                    def cache_element(primer_instructions, qualified_name):
-                        #todo allow lists in here? maybe
-                        element = self.fetcher.get_element(primer_instructions)
-                        self.crumbs.story_cache[qualified_name] = element
-
-                    def unpack_instructions(primer_dict, base_name):
-                        for k, v in primer_dict.items():
-                            if isinstance(v, str):
-                                cache_element(v, base_name + "." + k)
-                            else:
-                                unpack_instructions(v, base_name + "." + k)
-
-                    #check if it is a complex (dict) primer, in which case it's multiple instructions
-                    if isinstance(primer, dict):
-                        # todo: this is to make sure we don't unpack them multiple times; find a better way so that we don't have useless stuff in the dictionary
-                        self.crumbs.story_cache[primer_reference] = None
-                        unpack_instructions(primer, cache_id)
-                    else:
-                        cache_element(primer, cache_id)
 
     def prepare_block_meta(self):
         if "location_types" in self.current_block.keys():

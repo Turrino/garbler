@@ -1,33 +1,30 @@
-# any block without an in attribute can be used as a starting point
-# any block without an "out" attribute is an ending point
-{
-  entry_point: intro,
-  definitions:
-  {
-      intro: {
-        out_args: [ trouble ],
-        out: quest_discovery,
-      },
-      quest_discovery: {
-        args: [ trouble ],
-        out_args: [ trouble, quest ],
-        out: filler
-      },
-      filler: {
-        args: [ trouble, quest ],
-        out_args: [ trouble, quest ],
-        out: resolution
-      },
-      resolution: {
-        args: [ trouble, quest ],
-        out_args: [ trouble, quest ],
-        out: [ end_good, end_bad ]
-      },
-      end_good: {
-        args: [ trouble, quest ]
-      },
-      end_bad: {
-        args: [ trouble, quest ]
-      }
-  }
-}
+#MARKED FOR REMOVAL
+
+## any block without an in attribute can be used as a starting point
+## any block without an "out" attribute is an ending point
+#{
+#  entry_point: intro,
+#  definitions:
+#  {
+#      intro: {
+#        set: [ trouble, quest ],
+#        out: quest_discovery,
+#      },
+#      encounter: {
+#        args: [ trouble, quest ],
+#        set: [ retribution ],
+#        out: resolution
+#      },
+#      resolution: {
+#        args: [ trouble, quest, retribution, retribution, retribution ],
+#        keep: [ trouble, quest ],
+#        out: [ end_good, end_bad ]
+#      },
+#      end_good: {
+#        args: [ trouble, quest ]
+#      },
+#      end_bad: {
+#        args: [ trouble, quest ]
+#      }
+#  }
+#}
