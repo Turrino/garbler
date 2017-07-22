@@ -1,103 +1,49 @@
-from .ModParser import ModParser
+from pyparsing import *
 
-class ForkParser:
-    @staticmethod
-    def parse(block, mods, attributes):
-        for key, item in block["branches"].items():
+class ForkParser():
+    def __init__(self, block):
+        self.block = block
+        self.wrapper = None
+
+        # Common definitions
+        words = Combine(OneOrMore(Word(printables, excludeChars='{}') | White(' ')))
+        # todo make this token list configurable (more than two tokens)
+        token = Word('+-', max=1)
+        pointer_id = Word(printables, excludeChars=';').setParseAction(self.validate_pointer)
+        simple_pointer = Group('to' + pointer_id.setResultsName('pointer'))
+        tokenized_pointer = Group(token.setResultsName('token') + 'to' + pointer_id.setResultsName('pointer'))
+        pointers = delimitedList(tokenized_pointer, delim=";")
+        # switches
+        choice = Group('{' + Combine(OneOrMore(words)).setResultsName('text') + '}:' + pointers.setResultsName('pointers'))
+        # complete forms
+        self.simple_pointer_grammar = simple_pointer
+        self.switch_grammar = "switch" + Word(alphanums).setResultsName('target') + ':' \
+                              + delimitedList(choice, delim=';').setResultsName('choices')
+
+
+    def validate_pointer(self, pointer_id):
+        if pointer_id[0] not in self.block["branches"].keys():
+            raise ValueError(f'Pointer "{pointer_id}" does not point to any branch ({self.block["name"]})')
+
+    def update_block(self):
+        for key, item in self.block["branches"].items():
             if "fork" in item.keys():
-                fork_type = "fork"
-            elif "choice" in item.keys():
-                fork_type = "choice"
-            else:
-                continue
+                item["fork"] = self.parse(item["fork"])
 
-            fork = []
-            split = item[fork_type].split(";")
+        return self.block
 
-            def parse_to_entry(symbols):
-                # Entry section
-                level = 0
-                connotation = []
-                if symbols[0] != 'to':
-                    outcome_symbols = ['+', '-']
-                    connotation = symbols[0]
-                    count = len(connotation)
-                    consistent = connotation.count(connotation[0]) == count
-                    if connotation not in outcome_symbols or not consistent:
-                        raise ValueError('descriptive error here')
-                    level = str(count if connotation[0] == '+' else count * -1)
-                fork_entry["level"] = level
-                return symbols[len(connotation):]
+    def parse(self, text):
+        if (text[:6] == "switch"):
+            return self.parse_switch_choice(text)
+        else:
+            return self.parse_pointer(text)
 
-            for entry in split:
-                if entry != '':
-                    fork_entry = {}
-                    if fork_type == "choice":
-                        instructions = entry.split('"')
-                        meta = list(filter(lambda x: x != '', instructions[0].split(" ")))
-                        fork_entry["to"] = parse_to_entry(meta)[1]
-                        fork_entry["text"] = instructions[1]
-                    else:
-                        # split may leave empty strings at the end or beginning - filter those out
-                        instructions = list(filter(lambda x: x != '', entry.split(" ")))
-                        instructions = parse_to_entry(instructions)
-                        # Pointer section
-                        if instructions[0] != 'to':
-                            raise ValueError('descriptive error here')
-                        fork_entry["to"] = instructions[1]
-                        conditions = instructions[2:]
+    def parse_switch_choice(self, text):
+        result = self.switch_grammar.parseString(text)
+        return result
 
-                        # If section
-                        fork_entry["if"] = None
+    def parse_pointer(self, text):
+        result = self.simple_pointer_grammar.parseString(text)
+        pointer_id = result[0].pointer
 
-                        if len(conditions) != 0:
-                            if conditions[0] != 'if':
-                                raise ValueError('descriptive error here')
-
-                            parsed_cond = {"and": [], "or": []}
-
-                            while len(conditions) > 0:
-                                append_to = conditions[0]
-                                if append_to not in ['and', 'or']:
-                                    if append_to == 'if':
-                                        append_to = 'and'
-                                    else:
-                                        raise ValueError('descriptive error here')
-
-                                if conditions[1] in mods.keys():
-                                    condition = mods[conditions[1]]
-                                    conditions = conditions[2:]
-                                else:
-                                    to_parse = conditions[1:]
-                                    # check if there are multiple conditions, and split them
-                                    for i in range(0, len(to_parse)):
-                                        if to_parse[i] in ['and', 'or']:
-                                            to_parse = to_parse[:i]
-                                            break
-
-                                    condition = ModParser.parse(to_parse, attributes)
-                                    conditions = conditions[len(to_parse)+1:]
-
-                                parsed_cond[append_to].append(condition)
-                            fork_entry["if"] = parsed_cond
-                    # End of individual instruction
-                    fork.append(fork_entry)
-            item[fork_type] = fork
-
-        ForkParser.check_pointers(block)
-
-        return block
-
-    @staticmethod
-    def check_pointers(block):
-        # Go over the parsed forks again, see if their pointers make sense
-        for key, item in block["branches"].items():
-            if "fork" in item.keys():
-                for entry in item["fork"]:
-                    if entry["to"] not in block["branches"].keys():
-                        raise ValueError('descriptive error here')
-        return
-
-
-
-
+        return pointer_id
