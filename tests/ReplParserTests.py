@@ -1,5 +1,5 @@
 import unittest
-from builders.ReplParser import ReplParser
+from builders.Replacements import *
 
 
 class ReplParserTests(unittest.TestCase):
@@ -14,5 +14,5 @@ class ReplParserTests(unittest.TestCase):
                  "{0}{0}", "{0} {0}", " {0}{0}", "{0}{0} ", " {0} {0} "]
 
         for item in cases:
-            test1 = ReplParser.split(item.format(tag), "@", action)
+            test1 = split_repl(item.format(tag), "@", action)
             self.assertEqual(item.format(expected), test1)

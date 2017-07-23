@@ -40,6 +40,7 @@ class ReplParserTests(unittest.TestCase):
         self.assertEquals(expect_pointer1, res.choices[0].pointers[0].pointer)
         self.assertEquals(expect_token2, res.choices[0].pointers[1].token)
         self.assertEquals(expect_pointer2, res.choices[0].pointers[1].pointer)
+        self.assertEquals(expect_text2, res.choices[1].text)
         self.assertEquals(expect_token1, res.choices[1].pointers[0].token)
         self.assertEquals(expect_pointer3, res.choices[1].pointers[0].pointer)
         self.assertEquals(expect_token2, res.choices[1].pointers[1].token)

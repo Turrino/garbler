@@ -4,6 +4,7 @@ from builders.Event import Event
 from builders.Fetcher import Fetcher
 from builders.Drawerer import Drawerer
 from builders.ModParser import ModParser
+from builders.Replacements import *
 from builders.ForkParser import ForkParser
 import uuid
 from Inspector import Inspector
