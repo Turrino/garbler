@@ -1,0 +1,4 @@
+#Default file for anything that does not need to be sub-typed
+{
+   sample_instructions: adjective identity tail,
+}

@@ -9,7 +9,7 @@
     },
     B:{
       situation: 'test',
-      fork: 'switch test_object:
+      fork: 'switch test_entity:
               {test choice1}:
                   + to T1;
                   - to T2;

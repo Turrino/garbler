@@ -1,0 +1,7 @@
+{
+    type: '!!python/name:models.Story.Entity',
+    crumbs: {
+       character: adjective human-t tail,
+       creature: adjective role-t tail
+    }
+}

@@ -7,10 +7,10 @@ Choice = namedtuple('Choice', 'situation options')
 Option = namedtuple('Option', 'to level text')
 
 class Meta:
-    def __init__(self, element, elem_id, overlay_pos, subset=-1):
+    def __init__(self, element, elem_id, overlay_pos=None, subset=-1):
         self.element = element
         self.cache_id = elem_id
-        self.display = True if len(overlay_pos) else False
+        self.display = True if overlay_pos else False
         self.position = overlay_pos
         self.subset = subset
 
@@ -22,10 +22,11 @@ class Meta:
         return Meta(self.element, self.cache_id, [], self.subset)
 
 class Instructions:
-    def __init__(self, sub_type, descriptor):
+    def __init__(self, class_type, sub_type, type_indicator, contents):
+        self.class_type = class_type
         self.sub_type = sub_type
-        self.descriptor = descriptor.split(' ')
-        self.crumblists = []
+        self.contents = contents
+        self.type_indicator = type_indicator
 
 class Canvas:
     def __init__(self, type_id, background, overlay, static=None):

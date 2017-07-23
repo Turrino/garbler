@@ -1,10 +1,10 @@
 import random
 import os
 import yaml
-from Crumbs import Canvas
+from models.Models import Canvas
 from .CustomFilters import CustomFilters
 from PIL import Image, ImageFilter
-from .Utils import Utils
+from .CrumbUtils import *
 
 class Drawerer:
     def __init__(self, files_path, crumbs, canvas_cache=None):

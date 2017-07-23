@@ -1,22 +1,13 @@
-from builders.Utils import Utils
-from models.Models import *
+from builders.CrumbUtils import *
 
 class Crumbs:
-    def __init__(self, instructions, thesaurus, vocabulary, blocks, story_fundamentals,
-                 primers, drops, mods, attributes):
+    def __init__(self, instructions, thesaurus, vocabulary, blocks, primers, cache_init=None):
         self.instructions = instructions
         self.thesaurus = thesaurus
         self.vocabulary = vocabulary
         self.blocks = blocks
         self.primers = primers
-        self.mods = mods
-
-        # todo make more generic. remove items & ld from the cache defaults
-        self.story_cache = {"fundamentals": story_fundamentals, "ld": 0, "items": []}
-        self.drops = drops
-        self.item_attr = attributes["Items"]
-        self.char_attr = attributes["Character"]
-
+        self.story_cache = cache_init if cache_init is not None else {}
         self.instructions_map = {}
         self.thesaurus_map = {}
         self.path_mapper(self.instructions_map, self.instructions)
@@ -46,7 +37,7 @@ class Crumbs:
             result = self.traverse_path(full_path, target)[lookup_name]
 
             if type(result) is not str:
-                found = Utils.find_specific(result, lookup_name)
+                found = find_specific(result, lookup_name)
                 return Instructions(found["type"], found["item"])
             else:
                 return Instructions(lookup_name, result)
@@ -60,7 +51,7 @@ class Crumbs:
             result = self.traverse_path(full_path, target)
 
             if type(result) is not str:
-                return Utils.find_specific(result, lookup_name)
+                return find_specific(result, lookup_name)
             else:
                 return result
         elif self.check_keys(lookup_name, self.vocabulary):
@@ -71,7 +62,7 @@ class Crumbs:
             if type(lookup_name) is str:
                 return False
             else:
-                raise ValueError("Cannot lookup: {0}".format(lookup_name))
+                raise ValueError(f'Cannot lookup: {lookup_name}')
         return True
 
     def traverse_path(self, path, target):

@@ -1,7 +1,7 @@
 import unittest
 from Garbler import Garbler
 from builders.Fetcher import Fetcher
-from builders.Utils import Utils
+from builders.CrumbUtils import Utils
 
 
 class UtilsTest(unittest.TestCase):

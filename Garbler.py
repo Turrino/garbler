@@ -3,6 +3,7 @@ import yaml
 from builders.Event import Event
 from builders.Fetcher import Fetcher
 from builders.Drawerer import Drawerer
+from builders.CrumbUtils import *
 from builders.Replacements import *
 from builders.ForkParser import ForkParser
 import uuid
@@ -27,7 +28,7 @@ class Garbler:
         while not self.event.complete:
             fork = self.event.step(choice)
             if type(fork) is Choice:
-                choice = Utils.any_of_many(fork.options, False).to
+                choice = any_of_many(fork.options, False).to
         if draw:
             self.event.drawed = self.drawerer.combine(self.event)
         return self.event
@@ -83,20 +84,9 @@ class Garbler:
         with open(full_path, 'r') as yaml_file:
             return yaml.load(yaml_file)
 
-    # for integrity checks, have these loaded all at once,
-    # then check that all the special parameters in the blocks can be fetched from something in here
     def add_context(self, instructions):
         context_input = yaml.load(instructions)
-
-        def transform_function(parameter_text):
-            return Utils.get_individual_replacement(parameter_text[1:], self.crumbs.story_cache, self.fetcher.get_element)
-
-        #todo document usage of add_context and the special instruction $. also change the subset command $ since it's the same symbol
-        def transform_filter(item):
-            return item[0] == '$'
-
-        parsed_instructions = Utils.transform_all(context_input, transform_function, transform_filter)
-
+        parsed_instructions = transform_all(context_input, transform_function, transform_filter)
         #todo check that we're not overwriting anything!!
         if "identifier" in parsed_instructions.keys():
             self.crumbs.story_cache[parsed_instructions["identifier"]] = parsed_instructions
@@ -105,11 +95,13 @@ class Garbler:
                 self.crumbs.story_cache[key] = value
 
     def get_crumbs(self, inspect=False):
-        instructions = self.yaml_loader(["crumbs"])
+        instructions = []
+        for filename in os.listdir(os.path.join(self.files_path, "crumbs")):
+            with open(os.path.join(self.files_path, "crumbs", filename), 'r') as yaml_crumbs:
+                read_crumb_package(yaml.load(yaml_crumbs), instructions)
+
         thesaurus_vocabulary = self.yaml_loader(["thesaurus"])
-
         blocks_dict = {}
-
         for filename in os.listdir(os.path.join(self.files_path, "events", "blocks")):
             with open(os.path.join(self.files_path, "events", "blocks", filename), 'r') as yaml_block:
                 block = ForkParser(yaml.load(yaml_block)).update_block()
@@ -117,14 +109,10 @@ class Garbler:
                     blocks_dict[block["type"]].append(block)
                 else:
                     blocks_dict[block["type"]] = [block]
-
         crumbs = Crumbs(instructions, thesaurus_vocabulary["thesaurus"], thesaurus_vocabulary["vocabulary"],
-                        #todo can we remove story_fundamentals and primers?
-                        blocks_dict, None, None, drops, mods, attributes)
-
+                        blocks_dict, None)
         if inspect:
             Inspector.run_all_checks(crumbs)
-
         return crumbs
 
 
