@@ -1,6 +1,6 @@
 from pyparsing import *
 
-class ForkParser():
+class ForkParser:
     def __init__(self, block):
         self.block = block
         self.wrapper = None
@@ -8,17 +8,17 @@ class ForkParser():
         # Common definitions
         words = Combine(OneOrMore(Word(printables, excludeChars='{}') | White(' ')))
         # todo make this token list configurable (more than two tokens)
-        token = Word('+-', max=1)
-        pointer_id = Word(printables, excludeChars=';').setParseAction(self.validate_pointer)
-        simple_pointer = Group('to' + pointer_id.setResultsName('pointer'))
-        tokenized_pointer = Group(token.setResultsName('token') + 'to' + pointer_id.setResultsName('pointer'))
+        token = Word('+-', max=1).setResultsName('token')
+        pointer_id = Word(printables, excludeChars=':;').setParseAction(self.validate_pointer).setResultsName('pointer')
+        simple_pointer = Group('to' + pointer_id)
+        tokenized_pointer = Group(token + 'to' + pointer_id)
         pointers = delimitedList(tokenized_pointer, delim=";")
         # switches
         choice = Group('{' + Combine(OneOrMore(words)).setResultsName('text') + '}:' + pointers.setResultsName('pointers'))
         # complete forms
         self.simple_pointer_grammar = simple_pointer
-        self.switch_grammar = "switch" + Word(alphanums).setResultsName('target') + ':' \
-                              + delimitedList(choice, delim=';').setResultsName('choices')
+        self.switch_grammar = ("switch" + Word(printables, excludeChars=':;').setResultsName('target') + ':' \
+                              + delimitedList(choice, delim=';').setResultsName('choices'))
 
 
     def validate_pointer(self, pointer_id):

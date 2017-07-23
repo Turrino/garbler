@@ -3,7 +3,6 @@ import yaml
 from builders.Event import Event
 from builders.Fetcher import Fetcher
 from builders.Drawerer import Drawerer
-from builders.ModParser import ModParser
 from builders.Replacements import *
 from builders.ForkParser import ForkParser
 import uuid
@@ -11,9 +10,9 @@ from Inspector import Inspector
 from Crumbs import *
 
 class Garbler:
-    def __init__(self, config_path, load_context=False, cache_directory=None):
-        self.config = self.yaml_loader(config_path)
-        self.files_path = self.config["files_folder"]
+    def __init__(self, files_path, load_context=False, cache_directory=None):
+        self.files_path = files_path
+        self.config = self.yaml_loader(os.path.join(files_path, 'config'))
         self.crumbs = self.get_crumbs()
         self.fetcher = Fetcher(self.crumbs)
         self.drawerer = Drawerer(self.files_path, self.crumbs)
@@ -109,15 +108,11 @@ class Garbler:
         instructions = self.yaml_loader(["crumbs"])
         thesaurus_vocabulary = self.yaml_loader(["thesaurus"])
 
-        drops = self.yaml_loader(["events", "presets", "drops"])
-        attributes = self.yaml_loader(["events", "presets", "attributes"])
-        mods = ModParser.parse_all(self.yaml_loader(["events", "presets", "mods"]), attributes)
-
         blocks_dict = {}
 
         for filename in os.listdir(os.path.join(self.files_path, "events", "blocks")):
             with open(os.path.join(self.files_path, "events", "blocks", filename), 'r') as yaml_block:
-                block = ForkParser.parse(yaml.load(yaml_block), mods, attributes)
+                block = ForkParser(yaml.load(yaml_block)).update_block()
                 if block["type"] in blocks_dict.keys():
                     blocks_dict[block["type"]].append(block)
                 else:

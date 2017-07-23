@@ -1,9 +1,10 @@
 from Garbler import Garbler
 import unittest
+import os
 
 class GarblerTests(unittest.TestCase):
     def setUp(self):
-        self.garbler = Garbler("C:\\_source\\garbler\\files\\config", True)
+        self.garbler = Garbler(os.path.join(os.getcwd(), '..', 'files'), True)
 
     def tearDown(self):
         self.garbler = None

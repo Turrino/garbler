@@ -30,8 +30,6 @@ class ReplParserTests(unittest.TestCase):
                       f' {expect_token1} to {expect_pointer3};' \
                       f' {expect_token2} to {expect_pointer4};'
 
-        ts2 = 'switch owner: {Accept the task.}: + to 1; - to 2; {Refuse.}: + to 3; - to 4;'
-
         res = self.fp.parse_switch_choice(test_string)
 
         self.assertEquals(expect_target, res.target)

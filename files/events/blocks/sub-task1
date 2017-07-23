@@ -1,21 +1,33 @@
 {
-  name: encounter1,
+  name: test_sub-task,
   type: sub-task,
+  location_types: [ test_loc ],
   branches:
-  {
-    "1":{
-      situation: "text here... blah blah, saihdsadas",
-      fork:
-       "+ to 2 if random 50;
-        - to 3"
+   { A:{
+        situation: 'test',
+        fork: 'to B'
     },
-    "2":{
-      situation: "to good end",
-      terminal: resolution
+    B:{
+      situation: 'test',
+      fork: 'switch test_object:
+              {test choice1}:
+                  + to T1;
+                  - to T2;
+              {test choice}:
+                  + to T3;
+                  - to T4;'
     },
-    "3":{
-      situation: "to bad end",
-      terminal: resolution
+    T1:{
+    situation: 'terminal1'
+    },
+    T2:{
+    situation: 'terminal2'
+    },
+    T3:{
+    situation: 'terminal3'
+    },
+    T4:{
+    situation: 'terminal4'
     }
   }
 }

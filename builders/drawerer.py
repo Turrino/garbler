@@ -2,7 +2,6 @@ import random
 import os
 import yaml
 from Crumbs import Canvas
-from contextlib import contextmanager
 from .CustomFilters import CustomFilters
 from PIL import Image, ImageFilter
 from .Utils import Utils
